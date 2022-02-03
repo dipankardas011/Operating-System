@@ -1,9 +1,11 @@
 # Building the Custom Operating System
 
 All the reference are from the GNI UNIX and Linux
+and its a abstract layer just to learn about the kernel and OS design
 
-## types of projects
+## Components
 - [ ] CPU
 - [ ] File
-- [ ] Memory Management
+- [x] Memory Management
 - [ ] Permission
+- [x] Library
