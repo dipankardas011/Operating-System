@@ -30,13 +30,29 @@
  *        needs to be upgraded to the first queue after certain time
  */
 
-struct readyQueue {
+static u_int64_t CLK;
+
+struct readyQueue 
+{
   struct __LinkListHeaders    *Q1;
-  int                         priQ1;
+  int priQ1;
+  int Qt1;
+
   struct __LinkListHeaders    *Q2;
-  int                         priQ2;
+  int priQ2;
+  int Qt2;
+
   struct __LinkListHeaders    *Q3;
-  int                         priQ3;
+  int priQ3;
+  int Qt3;
+};
+
+struct Process {
+  char name[16];      // name
+  uint pid;           // pid
+  uint ppid;          // parent pid
+  uint arrTime;       // arrival time to the process queue
+  uint reqCPUTime;    // time for it to exectute
 };
 
 int 
