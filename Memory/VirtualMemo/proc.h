@@ -24,6 +24,9 @@ struct scheduling {
 struct niceness {
 };
 
+/**
+ * As it is simple system the process synchronization is not applyed
+ */
 struct proc {
     uint sz;                        // size of process memory(bytes)
     enum procState state;           // state of it
