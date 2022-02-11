@@ -8,9 +8,9 @@
 #include <stdlib.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#ifndef BLACKHOLE
 #define BLACKHOLE NULL
-
+#endif
 /**
  * Double Circular Linklist
  */
@@ -33,8 +33,7 @@ struct __LinkListHeaders
  * TODO: to be filled
  */
 // Before operating call this function
-struct __LinkListHeaders *
-initKStack() 
+struct __LinkListHeaders * initKQueue() 
 {
   struct __LinkListHeaders *tempK = 
           (struct __LinkListHeaders *)malloc(sizeof(struct __LinkListHeaders));
@@ -47,8 +46,7 @@ initKStack()
  * TODO: to be filled
  */
 // before forgetting about the pointer
-struct __LinkListHeaders *
-remKStack(struct __LinkListHeaders* TOPKPTR) 
+struct __LinkListHeaders * remKQueue(struct __LinkListHeaders* TOPKPTR) 
 {
   // using traditional loop for removal
   struct __LinkList *temp = TOPKPTR->front;
@@ -70,8 +68,7 @@ remKStack(struct __LinkListHeaders* TOPKPTR)
  * @param iData it takes the insert data to be inserted
  * @return 1 means success 0 means failure
  */
-int 
-__push_front(struct __LinkListHeaders **TOPKPTR, void *iData) 
+int __push_front(struct __LinkListHeaders **TOPKPTR, void *iData) 
 {
   struct __LinkList *front = (struct __LinkList *)malloc(sizeof(struct __LinkList));
   assert(front);
@@ -83,15 +80,14 @@ __push_front(struct __LinkListHeaders **TOPKPTR, void *iData)
   (*TOPKPTR)->front = front;
 
   assert((*TOPKPTR)->front->data_ptr == iData);
-  return 1;
+  return 0;
 }
 
 
 /**
  * TODO: to be filled
  */
-int 
-__push_rear(struct __LinkListHeaders **TOPKPTR, void *iData) 
+int __push_rear(struct __LinkListHeaders **TOPKPTR, void *iData) 
 {
   struct __LinkList *rear = (struct __LinkList *)malloc(sizeof(struct __LinkList));
   assert(rear);
@@ -104,14 +100,13 @@ __push_rear(struct __LinkListHeaders **TOPKPTR, void *iData)
   (*TOPKPTR)->rear = rear;
 
   assert((*TOPKPTR)->rear->data_ptr == iData);   // intregity check
-  return 1;
+  return 0;
 }
 
 /**
  * TODO: to be filled
  */
-void * 
-__pop_front(struct __LinkListHeaders **TOPKPTR) 
+void * __pop_front(struct __LinkListHeaders **TOPKPTR) 
 {
   if ((*TOPKPTR)->front == BLACKHOLE)
     return BLACKHOLE;
@@ -136,8 +131,7 @@ __pop_front(struct __LinkListHeaders **TOPKPTR)
 /**
  * TODO: to be filled
  */
-void * 
-__pop_rear(struct __LinkListHeaders **TOPKPTR) 
+void * __pop_rear(struct __LinkListHeaders **TOPKPTR) 
 {
 
   if ((*TOPKPTR)->rear == BLACKHOLE)
