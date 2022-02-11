@@ -63,16 +63,18 @@ int initReadyQueue(struct readyQueue **pTable) {
   *pTable = (struct readyQueue *) malloc(sizeof(struct readyQueue));
   assert(*pTable);
 
-  (*pTable)->Q1 = BLACKHOLE;
+  (*pTable)->Q1 = initKQueue();
+  assert((*pTable)->Q1);
   (*pTable)->priQ1 = 1;
   (*pTable)->Qt1 = 2;
-  printf("Qt1: %d\n", (*pTable)->Qt1);
 
-  (*pTable)->Q2 = BLACKHOLE;
+  (*pTable)->Q2 = initKQueue();
+  assert((*pTable)->Q2);
   (*pTable)->priQ2 = 2;
   (*pTable)->Qt2 = 4;
 
-  (*pTable)->Q3 = BLACKHOLE;
+  (*pTable)->Q3 = initKQueue();
+  assert((*pTable)->Q3);
   (*pTable)->priQ3 = 3;
   (*pTable)->Qt3 = 8;
 
@@ -81,4 +83,22 @@ int initReadyQueue(struct readyQueue **pTable) {
 
 int schedulerRoundRobin(){
   return 0;
+}
+
+void buildProcessTable(){}
+
+void turnONQueue(struct readyQueue **pTable){
+  struct proc **processTable = BLACKHOLE;
+  processTable = (struct proc **)malloc(sizeof(struct proc *) * 5);
+  char namePP[16] = {'\0'};
+  for (int i = 0; i < 5; i++) {
+    namePP[0] = (char)(65 + i);
+    namePP[1] = (char)(65 + i + 1);
+    processTable[i] = initProcess(namePP, i + 1);
+  }
+
+  for (size_t i = 0; i < 5; i++)
+  {
+    printOutProcessDetails(processTable[i]);
+  }
 }

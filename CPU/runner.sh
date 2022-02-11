@@ -2,11 +2,11 @@
 # echo on
 make build
 make run
-echo $?
-if [ "echo $?" != 0]
+ret=`echo $?`
+if [ $ret -eq 0 ]
 then
-  echo "Error"
-  exit 0
+  echo "Compiled it✅ "
 else
-  echo "Compiled it✅"
+  echo "Error❌ "
+  exit 0
 fi
