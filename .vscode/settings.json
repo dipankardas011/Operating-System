@@ -1,5 +1,7 @@
 {
   "files.associations": {
-    "assert.h": "c"
+    "assert.h": "c",
+    "stdio.h": "c",
+    "kqueue.h": "c"
   }
 }

@@ -2,6 +2,8 @@
  * TODO: implementation of the multilevel feedback queue scheduling
  */
 #include "../lib/kqueue.h"
+#include <assert.h>
+#include <stdio.h>
 
 #define DOWNGRADE_TIME  30
 #define UPGRADE_TIME    20
@@ -30,7 +32,7 @@
  *        needs to be upgraded to the first queue after certain time
  */
 
-static u_int64_t CLK;
+static u_int64_t CLK = 0;
 
 struct readyQueue 
 {
@@ -55,8 +57,28 @@ struct Process {
   uint reqCPUTime;    // time for it to exectute
 };
 
-int 
-main(int argc, char const *argv[])
-{
+
+int initReadyQueue(struct readyQueue **pTable) {
+  CLK = 1;
+  *pTable = (struct readyQueue *) malloc(sizeof(struct readyQueue));
+  assert(*pTable);
+
+  (*pTable)->Q1 = BLACKHOLE;
+  (*pTable)->priQ1 = 1;
+  (*pTable)->Qt1 = 2;
+  printf("Qt1: %d\n", (*pTable)->Qt1);
+
+  (*pTable)->Q2 = BLACKHOLE;
+  (*pTable)->priQ2 = 2;
+  (*pTable)->Qt2 = 4;
+
+  (*pTable)->Q3 = BLACKHOLE;
+  (*pTable)->priQ3 = 3;
+  (*pTable)->Qt3 = 8;
+
+  return 0;
+}
+
+int schedulerRoundRobin(){
   return 0;
 }
