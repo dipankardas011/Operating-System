@@ -7,7 +7,7 @@
 
 #define DOWNGRADE_TIME  30
 #define UPGRADE_TIME    20
-
+#define NO_PROCESSES    5
 /**
  *        ready queue all are Round Robin
  *     ==========================
@@ -49,15 +49,33 @@ struct readyQueue
   int Qt3;
 };
 
-struct Process {
-  char name[16];      // name
-  uint pid;           // pid
-  uint ppid;          // parent pid
-  uint arrTime;       // arrival time to the process queue
-  uint reqCPUTime;    // time for it to exectute
-};
+void printOutLoudPatQueue(struct __LinkListHeaders *ptr) {
+  struct __LinkList *iter = ptr->front;
+  while (iter!=BLACKHOLE) {
+    printf("%p -> ", iter->data_ptr);
+    iter = iter->next;
+  }
+  printf("[LAST]\n---\n");
+}
 
+void currStateOfQueue(struct readyQueue *rQue) {
+  printf("Queue [ 1 ]\npri: %d, Quantum Time: %d\n",rQue->priQ1, rQue->Qt1);
+  printOutLoudPatQueue(rQue->Q1);
+  printf("Queue [ 2 ]\npri: %d, Quantum Time: %d\n", rQue->priQ2, rQue->Qt2);
+  printOutLoudPatQueue(rQue->Q2);
+  printf("Queue [ 3 ]\npri: %d, Quantum Time: %d\n",rQue->priQ3, rQue->Qt3);
+  printOutLoudPatQueue(rQue->Q3);
+}
 
+// struct Process {
+//   char name[16];      // name
+//   uint pid;           // pid
+//   uint ppid;          // parent pid
+//   uint arrTime;       // arrival time to the process queue
+//   uint reqCPUTime;    // time for it to exectute
+// };
+
+/////// SETUP for the readyQueue  ///////
 int initReadyQueue(struct readyQueue **pTable) {
   CLK = 1;
   *pTable = (struct readyQueue *) malloc(sizeof(struct readyQueue));
@@ -81,24 +99,65 @@ int initReadyQueue(struct readyQueue **pTable) {
   return 0;
 }
 
-int schedulerRoundRobin(){
+int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable){
+
+  // check which can be loaded to the queue
+  for (int i = 0; i < NO_PROCESSES; i++) {
+
+    switch((*processTT)[i]->state) {
+      case RUNNING:
+        printf("ITS a 'RUNNING' PROC\n");
+        break;
+      
+      case RUNNABLE:
+        printf("ITS a 'RUNNABLE' PROC\n");
+        break;
+      
+      case WAITING:
+        printf("ITS a 'WAITING' PROC\n");
+        break;
+
+      case EMBRYO:
+        printf("ITS a 'EMBRYO' PROC\n");
+        break;
+
+      case ZOMBIE:
+        printf("ITS a 'ZOMBIE' PROC\n");
+        break;
+
+      case SLEEPING:
+        printf("ITS a 'SLEEPING' PROC\n");
+        break;
+      
+      default:
+        fprintf(stderr, "Internal err 0x000\n");
+    }
+  }
+
   return 0;
 }
 
-void buildProcessTable(){}
 
-void turnONQueue(struct readyQueue **pTable){
-  struct proc **processTable = BLACKHOLE;
-  processTable = (struct proc **)malloc(sizeof(struct proc *) * 5);
+////////  TESTING  ////////
+void buildProcessTable(struct proc ***processTT){
+  for (int i = 0;i <NO_PROCESSES; i++) {
+    printf("Enter the arr and the burst times for process_[ %d ]\n", i);
+    uint xx, yy;
+    scanf("%d %d", &xx, &yy);
+    (*processTT)[i]->arrivalTime = xx;
+    (*processTT)[i]->burstTime = yy;
+  }
+ 
+}
+
+void turnONQueue(struct proc ***processTT){
+  *processTT = (struct proc **)malloc(sizeof(struct proc *) * NO_PROCESSES);
+  assert(*processTT);
   char namePP[16] = {'\0'};
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < NO_PROCESSES; i++) {
     namePP[0] = (char)(65 + i);
     namePP[1] = (char)(65 + i + 1);
-    processTable[i] = initProcess(namePP, i + 1);
+    (*processTT)[i] = initProcess(namePP, i + 1);
   }
-
-  for (size_t i = 0; i < 5; i++)
-  {
-    printOutProcessDetails(processTable[i]);
-  }
+  
 }
