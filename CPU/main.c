@@ -1,7 +1,7 @@
 #include "../Memory/VirtualMemo/proc.h"
 #include "scheduler.c"
 // #include "syscall.c"
-
+u_int64_t CLK = 0;
 int Smain()
 {
   struct proc **processTT = BLACKHOLE;

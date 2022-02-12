@@ -32,7 +32,7 @@
  *        needs to be upgraded to the first queue after certain time
  */
 
-static u_int64_t CLK = 0;
+extern u_int64_t CLK;
 
 struct readyQueue 
 {
@@ -67,14 +67,6 @@ void currStateOfQueue(struct readyQueue *rQue) {
   printOutLoudPatQueue(rQue->Q3);
 }
 
-// struct Process {
-//   char name[16];      // name
-//   uint pid;           // pid
-//   uint ppid;          // parent pid
-//   uint arrTime;       // arrival time to the process queue
-//   uint reqCPUTime;    // time for it to exectute
-// };
-
 /////// SETUP for the readyQueue  ///////
 int initReadyQueue(struct readyQueue **pTable) {
   CLK = 1;
@@ -108,9 +100,10 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
       case RUNNING:
         printf("ITS a 'RUNNING' PROC\n");
         break;
-      
+
       case RUNNABLE:
         printf("ITS a 'RUNNABLE' PROC\n");
+        __push_rear((*queueTable)->Q1, (*processTT)[i]);
         break;
       
       case WAITING:
