@@ -103,7 +103,7 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
 
       case RUNNABLE:
         printf("ITS a 'RUNNABLE' PROC\n");
-        __push_rear((*queueTable)->Q1, (*processTT)[i]);
+        (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
         break;
       
       case WAITING:
@@ -126,6 +126,7 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
         fprintf(stderr, "Internal err 0x000\n");
     }
   }
+  currStateOfQueue(*queueTable);
 
   return 0;
 }

@@ -11,6 +11,12 @@
 #ifndef BLACKHOLE
 #define BLACKHOLE NULL
 #endif
+
+typedef enum boolean {
+  False,
+  True
+}bool;
+
 /**
  * Double Circular Linklist
  */
@@ -83,24 +89,33 @@ int __push_front(struct __LinkListHeaders **TOPKPTR, void *iData)
   return 0;
 }
 
+bool isEmpty(struct __LinkList *ptr) {
+  return (ptr == BLACKHOLE) ? True : False;
+}
 
 /**
  * TODO: to be filled
  */
-int __push_rear(struct __LinkListHeaders **TOPKPTR, void *iData) 
+struct __LinkListHeaders * __push_rear(struct __LinkListHeaders *TOPKPTR, void *iData) 
 {
   struct __LinkList *rear = (struct __LinkList *)malloc(sizeof(struct __LinkList));
   assert(rear);
   rear->data_ptr = iData;
   
   rear->next = BLACKHOLE;
-  (*TOPKPTR)->rear->next = rear;
-  rear->prev = (*TOPKPTR)->rear;
+  
+  if (isEmpty(TOPKPTR->rear) == True) {
+    TOPKPTR->front = TOPKPTR->rear = rear;
+    return TOPKPTR;
+  }
 
-  (*TOPKPTR)->rear = rear;
+  TOPKPTR->rear->next = rear;
+  rear->prev = TOPKPTR->rear;
 
-  assert((*TOPKPTR)->rear->data_ptr == iData);   // intregity check
-  return 0;
+  TOPKPTR->rear = rear;
+
+  assert(TOPKPTR->rear->data_ptr == iData);   // intregity check
+  return TOPKPTR;
 }
 
 /**
