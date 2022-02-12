@@ -4,7 +4,7 @@
 #include "../lib/kqueue.h"
 #include <assert.h>
 #include <stdio.h>
-
+#define UNDEFINED       0x9999
 #define DOWNGRADE_TIME  30
 #define UPGRADE_TIME    20
 #define NO_PROCESSES    5
@@ -91,7 +91,25 @@ int initReadyQueue(struct readyQueue **pTable) {
   return 0;
 }
 
+
+int __which_Queue_cpu_will_access(struct readyQueue *queueTable){
+  if (isEmpty(queueTable->Q1->front) == True)
+    // means that Q1 is empty
+    if (isEmpty(queueTable->Q2->front) == True)
+      if (isEmpty(queueTable->Q2->front) == True)
+        return UNDEFINED;
+      else
+        return 3;
+    else 
+      return 2;
+  else
+    return 1;
+}
+
 int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable){
+  
+  CLK++;
+
 
   // check which can be loaded to the queue
   for (int i = 0; i < NO_PROCESSES; i++) {
