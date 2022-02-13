@@ -1,7 +1,7 @@
 #include "../Memory/VirtualMemo/proc.h"
 #include "scheduler.c"
 // #include "syscall.c"
-u_int64_t CLK = 0;
+u_int64_t CLOCK_TIME = 0;
 
 #define SCH_DULE  30
 #define INT_RUPT  31
@@ -10,23 +10,16 @@ int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **) = {
   [SCH_DULE] schedulerRoundRobin
 };
 
-struct CPU_RETURNED {
-  struct proc *whichHasToBeAdded;
-  int insertInWhichQueue;
-};
 
 /**
  * @return NULL when no process has to be added to the ready queue(means its done)
  * otherwise the process which has to be added will be returned
  */
-struct CPU_RETURNED* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM)
+struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* whichQueue)
 {
   int decussion = __which_Queue_cpu_will_access(*readyQueueRAM);
   struct proc *processToRun = BLACKHOLE;
-
-  struct CPU_RETURNED *returnTYPE = (struct CPU_RETURNED*)malloc(sizeof(struct CPU_RETURNED));
-  returnTYPE->insertInWhichQueue = 0;
-  returnTYPE->whichHasToBeAdded = BLACKHOLE;
+  *whichQueue = decussion;
 
   switch (decussion) {
     case 1:
@@ -34,7 +27,7 @@ struct CPU_RETURNED* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM)
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
         (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
 
-        printf("+| %s |+\n", processToRun->name);
+        printf("+| %s |+", processToRun->name);
 
         /**
          * TODO: something to do
@@ -47,24 +40,20 @@ struct CPU_RETURNED* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM)
         while (qt1 > 0 && processToRun->burstTime > 0 ) {
           qt1--;
           (processToRun->burstTime)--;
-          CLK++;
+          CLOCK_TIME++;
         }
         if (processToRun->burstTime > 0 && qt1 == 0) {
           // reinsert it in second Queue
           // as it has crossed its usage time in most pri queue
           // just for now place the removed queue to the same qeue which is here Q1
           // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
-          returnTYPE->insertInWhichQueue = decussion;
           processToRun->state = RUNNABLE;
-          returnTYPE->whichHasToBeAdded = processToRun;
         }
         if (processToRun->burstTime == 0 && qt1 >= 0) {
           // free the memory allocated
           free(processToRun);
-          returnTYPE->insertInWhichQueue = decussion;
-          returnTYPE->whichHasToBeAdded = BLACKHOLE;
+          processToRun = BLACKHOLE;
         }
-        
 
         /**
          * TODO: I/O operation support to be added
@@ -88,7 +77,7 @@ struct CPU_RETURNED* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM)
     default:
       fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
   }
-  return returnTYPE;
+  return processToRun;
 }
 /***
  * ASSUME that all the processes has arrival time to be 0
@@ -117,22 +106,29 @@ int Smain()
     if (__ALL__DONE__(readyQueueTT) == True) {
       break;
     }
-    struct CPU_RETURNED *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT);
+    int whichQueue = 0;
+    struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue);
+    if (callBack == BLACKHOLE) {
+      // that particular process has completed no need to add at the end
+      continue;
+    }
     // CPU has done its thing how the time interrupt will occur
     // followed by scheduling algo to refresh itself
     // int res = __cpu__can__call__[SCH_DULE](&processTT, &readyQueueTT);
-    printf("+++++++++++++\n");
-    printf("+ Verify is it getting it back\n");
-    printf("+ name:(%s), remBurstTime:(%d), CLOCK TIME:(%ld)\n",callBack->whichHasToBeAdded->name,callBack->whichHasToBeAdded->burstTime, CLK);
-    printf("+++++++++++++\n");
+    // printf("+++++++++++++\n");
+    // printf("+ Verify is it getting it back\n");
+    // ///**, remBurstTime:(%d),*/
+    // printf("+ name:(%s) CLOCK TIME:(%ld)\n",callBack->name, CLOCK_TIME);
+    // printf("+++++++++++++\n");
 
-    int ret = schedulerRoundRobinSCH(callBack->whichHasToBeAdded, &readyQueueTT, callBack->insertInWhichQueue);
+    int ret = schedulerRoundRobinSCH(callBack, &readyQueueTT, whichQueue);
     if (ret == UNDEFINED)
       return UNDEFINED;
     // printf("~~~~~~~~\n");
     // currStateOfQueue(readyQueueTT);
     // printf("~~~~~~~~\n");
   }
+  printf("\n");
 
   /**
    * deallocate the memory

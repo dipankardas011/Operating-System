@@ -32,7 +32,7 @@
  *        needs to be upgraded to the first queue after certain time
  */
 
-extern u_int64_t CLK;
+extern u_int64_t CLOCK_TIME;
 
 struct readyQueue 
 {
@@ -69,7 +69,7 @@ void currStateOfQueue(struct readyQueue *rQue) {
 
 /////// SETUP for the readyQueue  ///////
 int initReadyQueue(struct readyQueue **pTable) {
-  CLK = 1;
+  CLOCK_TIME = 1;
   *pTable = (struct readyQueue *) malloc(sizeof(struct readyQueue));
   assert(*pTable);
 
@@ -126,7 +126,7 @@ int schedulerRoundRobinSCH(struct proc *processToAdd, struct readyQueue **queueT
 
 int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable){
   
-  CLK++;
+  CLOCK_TIME++;
 
 
   // check which can be loaded to the queue
