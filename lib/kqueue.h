@@ -47,7 +47,9 @@ struct __LinkListHeaders * initKQueue()
   tempK->front = tempK->rear = BLACKHOLE;
   return tempK;
 }
-
+bool isEmpty(struct __LinkList *ptr) {
+  return (ptr == BLACKHOLE) ? True : False;
+}
 /**
  * TODO: to be filled
  */
@@ -95,9 +97,6 @@ struct __LinkListHeaders * __push_front(struct __LinkListHeaders *TOPKPTR, void 
   return TOPKPTR;
 }
 
-bool isEmpty(struct __LinkList *ptr) {
-  return (ptr == BLACKHOLE) ? True : False;
-}
 
 /**
  * TODO: to be filled
@@ -153,7 +152,7 @@ struct __LinkListHeaders * __pop_front(struct __LinkListHeaders *TOPKPTR)
  */
 struct __LinkListHeaders * __pop_rear(struct __LinkListHeaders *TOPKPTR) 
 {
-  if (isEmpty(TOPKPTR) == True)
+  if (isEmpty(TOPKPTR->front) == True)
     return TOPKPTR;
 
   if (TOPKPTR->front == TOPKPTR->rear) {

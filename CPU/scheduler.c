@@ -106,6 +106,24 @@ int __which_Queue_cpu_will_access(struct readyQueue *queueTable){
     return 1;
 }
 
+
+int schedulerRoundRobinSCH(struct proc *processToAdd, struct readyQueue **queueTable, int whichQueue){
+  
+  if (whichQueue == 1)
+    (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, processToAdd);
+  else if (whichQueue == 2)
+    (*queueTable)->Q2 = __push_rear((*queueTable)->Q2, processToAdd);
+  else if (whichQueue == 3) 
+    (*queueTable)->Q3 = __push_rear((*queueTable)->Q3, processToAdd);
+  else {
+    fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
+    return UNDEFINED;
+  }
+
+  return 0;
+}
+
+
 int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable){
   
   CLK++;
@@ -140,6 +158,10 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
         printf("ITS a 'SLEEPING' PROC\n");
         break;
       
+      case DIED:
+        printf("ITS a 'DIED' PROC\n");
+        break;
+
       default:
         fprintf(stderr, "Internal err 0x000\n");
     }
@@ -149,6 +171,10 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
   return 0;
 }
 
+bool __ALL__DONE__(struct readyQueue *ptr) {
+  // array of the proc
+  return isEmpty(ptr->Q1->front) & isEmpty(ptr->Q2->front) & isEmpty(ptr->Q3->front);
+}
 
 ////////  TESTING  ////////
 void buildProcessTable(struct proc ***processTT){

@@ -11,6 +11,7 @@ enum procState
   SLEEPING,
   RUNNING,
   RUNNABLE,
+  DIED,
   ZOMBIE
 };
 
