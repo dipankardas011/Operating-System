@@ -8,7 +8,7 @@ u_int64_t CLOCK_TIME = 0;
 #define INT_RUPT  31
 
 #define PS(processTT) \
-  printf("PID\tName\tState\tArrival_Time\tCPU_TIME\n"); \
+  printf("PID\tName\tState\tArrival_Time\tCPU_TIME1\tIO_TIME\tCPU_TIME2\n"); \
   for (size_t i = 0; i < NO_PROCESSES; i++)             \
     printOutProcessDetails(processTT[i]);               \
   printf("--------\n");
@@ -33,11 +33,11 @@ int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **, int) = {
  */
 struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* whichQueue)
 {
-  int decussion = __which_Queue_cpu_will_access(*readyQueueRAM);
+  int decision = __which_Queue_cpu_will_access(*readyQueueRAM);
   struct proc *processToRun = BLACKHOLE;
-  *whichQueue = decussion;
+  *whichQueue = decision;
 
-  switch (decussion) {
+  switch (decision) {
     case 1:
       {
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
@@ -48,26 +48,59 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
         u_int64_t startTime = CLOCK_TIME;
 
         int qt1 = (*readyQueueRAM)->Qt1;
-        while (qt1 > 0 && processToRun->burstTime > 0 ) {
-          qt1--;
-          (processToRun->burstTime)--;
-          CLOCK_TIME++;
-          printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+
+        if (processToRun->burstTime1 > 0) 
+        {
+          // first phase is not completed
+          while (qt1 > 0 && processToRun->burstTime1 > 0 ) {
+            qt1--;
+            (processToRun->burstTime1)--;
+            CLOCK_TIME++;
+            printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+          }
+          printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+          if (processToRun->burstTime1 > 0 && qt1 == 0) {
+            // reinsert it in second Queue
+            // as it has crossed its usage time in most pri queue
+            // just for now place the removed queue to the same qeue which is here Q1
+            // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
+            processToRun->state = RUNNABLE;
+          }
+          if (processToRun->burstTime1 == 0 && qt1 >= 0) {
+            // free the memory allocated
+            // ig the free is having som problems
+            // processToRun->state = DIED;
+            processToRun->state = WAITING;
+            /**
+             * IMP: processToRun will send NULL only when all the Activity is done 
+             */
+            // processToRun = BLACKHOLE;
+          }
         }
-        printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
-        if (processToRun->burstTime > 0 && qt1 == 0) {
-          // reinsert it in second Queue
-          // as it has crossed its usage time in most pri queue
-          // just for now place the removed queue to the same qeue which is here Q1
-          // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
-          processToRun->state = RUNNABLE;
-        }
-        if (processToRun->burstTime == 0 && qt1 >= 0) {
-          // free the memory allocated
-          // ig the free is having som problems
-          // free(processToRun);
-          processToRun->state = DIED;
-          processToRun = BLACKHOLE;
+        else 
+        {
+          // first phase is completed
+          while (qt1 > 0 && processToRun->burstTime2 > 0 ) {
+            qt1--;
+            (processToRun->burstTime2)--;
+            CLOCK_TIME++;
+            printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+          }
+          printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+          if (processToRun->burstTime2 > 0 && qt1 == 0) {
+            // reinsert it in second Queue
+            // as it has crossed its usage time in most pri queue
+            // just for now place the removed queue to the same qeue which is here Q1
+            // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
+            processToRun->state = RUNNABLE;
+          }
+          if (processToRun->burstTime2 == 0 && qt1 >= 0) {
+            // free the memory allocated
+            // ig the free is having som problems
+            processToRun->state = DIED;
+            // processToRun->state = WAITING;
+            processToRun = BLACKHOLE;
+          }
         }
       }
       break;
@@ -95,7 +128,9 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
   return processToRun;
 }
 
-
+/**
+ * TODO: Do the same changes
+ */
 struct proc* __CPU__EXECUTION__AREA_NONDD__(struct readyQueue **readyQueueRAM, int* whichQueue)
 {
   int decussion = __which_Queue_cpu_will_access(*readyQueueRAM);
@@ -165,19 +200,25 @@ void sortIt(struct proc ***arrayOfProcAssigned) {
         T->state = (*arrayOfProcAssigned)[j]->state;
         T->PID = (*arrayOfProcAssigned)[j]->PID;
         T->parent = (*arrayOfProcAssigned)[j]->parent;
-        T->burstTime = (*arrayOfProcAssigned)[j]->burstTime;
+        T->burstTime1 = (*arrayOfProcAssigned)[j]->burstTime1;
+        T->burstTime2 = (*arrayOfProcAssigned)[j]->burstTime2;
+        T->IOTime = (*arrayOfProcAssigned)[j]->IOTime;
         strcpy(T->name, (*arrayOfProcAssigned)[j]->name);
         (*arrayOfProcAssigned)[j]->arrivalTime = (*arrayOfProcAssigned)[j+1]->arrivalTime;
         (*arrayOfProcAssigned)[j]->state = (*arrayOfProcAssigned)[j+1]->state;
         (*arrayOfProcAssigned)[j]->PID = (*arrayOfProcAssigned)[j+1]->PID;
         (*arrayOfProcAssigned)[j]->parent = (*arrayOfProcAssigned)[j+1]->parent;
-        (*arrayOfProcAssigned)[j]->burstTime = (*arrayOfProcAssigned)[j+1]->burstTime;
+        (*arrayOfProcAssigned)[j]->burstTime1 = (*arrayOfProcAssigned)[j+1]->burstTime1;
+        (*arrayOfProcAssigned)[j]->burstTime2 = (*arrayOfProcAssigned)[j+1]->burstTime2;
+        (*arrayOfProcAssigned)[j]->IOTime = (*arrayOfProcAssigned)[j+1]->IOTime;
         strcpy((*arrayOfProcAssigned)[j]->name, (*arrayOfProcAssigned)[j+1]->name);
         (*arrayOfProcAssigned)[j+1]->arrivalTime = T->arrivalTime;
         (*arrayOfProcAssigned)[j+1]->state = T->state ;
         (*arrayOfProcAssigned)[j+1]->PID = T->PID;
         (*arrayOfProcAssigned)[j+1]->parent = T->parent;
-        (*arrayOfProcAssigned)[j+1]->burstTime = T->burstTime;
+        (*arrayOfProcAssigned)[j+1]->burstTime1 = T->burstTime1;
+        (*arrayOfProcAssigned)[j+1]->burstTime2 = T->burstTime2;
+        (*arrayOfProcAssigned)[j+1]->IOTime = T->IOTime;
         strcpy((*arrayOfProcAssigned)[j+1]->name, T->name);
         free(T);
       }
@@ -190,7 +231,9 @@ int SmainDebug()
   printf("\t\t\t\t{{{{ Devlopment mode }}}}\n\n");
   struct proc **processTT = BLACKHOLE;
   struct readyQueue *readyQueueTT = BLACKHOLE;
+  struct IOQueue *ioBuffer = BLACKHOLE;
   initReadyQueue(&readyQueueTT);
+  initReadyQueue(&ioBuffer);
   turnONQueue(&processTT);
   buildProcessTable(&processTT);
 
@@ -202,6 +245,10 @@ int SmainDebug()
   while (True) {
     // READYQUEPS(readyQueueTT)
     // if all the queues are empty then stop the computer/shutdown
+    /**
+     * TODO: Added the check for the whether the IOBUFFER IS empty or not
+     * a case can be that ready queue is over and all the processes are inside the buffer
+     */
     if (__ALL__DONE__(readyQueueTT) == True && _ALL_Processes_are_in_readyQueue(&processTT) == True) {
       break;
     }
@@ -211,6 +258,9 @@ int SmainDebug()
       // that particular process has completed no need to add at the end
       schedulerRoundRobin(&processTT, &readyQueueTT, 1);
       continue;
+    }
+    else if (callBack->state == WAITING) {
+      // add it to the IOBUFFER
     }
     schedulerRoundRobin(&processTT, &readyQueueTT, 1);
 
@@ -226,7 +276,9 @@ int SmainDebug()
   return EXIT_SUCCESS;
 }
 
-
+/**
+ * TODO: Change the runner mode as well along with the Dev mode
+ */
 int SmainRun()
 {
   printf("\t\t\t\t{{{{ Runner mode }}}}\n\n");

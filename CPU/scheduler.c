@@ -1,4 +1,5 @@
 #include "../lib/kqueue.h"
+#include "../IO/main.h"
 #include <assert.h>
 #include <stdio.h>
 #define UNDEFINED       0x9999
@@ -121,8 +122,6 @@ int schedulerRoundRobinSCH(struct proc *processToAdd, struct readyQueue **queueT
 
 
 int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable, int mode){
-  
-  // CLOCK_TIME++;
 
   // check which can be loaded to the queue
   for (int i = 0; i < NO_PROCESSES; i++) {
@@ -148,7 +147,6 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
        * So we will check all the embryo process from table and push it onto the Ready Queue
        * based on the CLK time
        */
-
       case EMBRYO:
         if (mode == 1)
           printf("ITS a 'EMBRYO' PROC\n");
@@ -198,11 +196,13 @@ bool __ALL__DONE__(struct readyQueue *ptr) {
 ////////  TESTING  ////////
 void buildProcessTable(struct proc ***processTT){
   for (int i = 0;i <NO_PROCESSES; i++) {
-    printf("Enter the arr and the burst times for process_[ %d ]\n", i);
-    uint xx, yy;
-    scanf("%d %d", &xx, &yy);
+    printf("Enter the {Arrival Time},{Burst time1},{IO time},{Burst time2} for process_[ %d ]\n", i);
+    uint xx, yy1, yy2, io;
+    scanf("%d %d %d %d", &xx, &yy1, &io, &yy2);
     (*processTT)[i]->arrivalTime = xx;
-    (*processTT)[i]->burstTime = yy;
+    (*processTT)[i]->burstTime1 = yy1;
+    (*processTT)[i]->burstTime2 = yy2;
+    (*processTT)[i]->IOTime = io;
   }
  
 }
