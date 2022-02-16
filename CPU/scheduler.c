@@ -1,6 +1,3 @@
-/**
- * TODO: implementation of the multilevel feedback queue scheduling
- */
 #include "../lib/kqueue.h"
 #include <assert.h>
 #include <stdio.h>
@@ -126,8 +123,7 @@ int schedulerRoundRobinSCH(struct proc *processToAdd, struct readyQueue **queueT
 
 int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable){
   
-  CLOCK_TIME++;
-
+  // CLOCK_TIME++;
 
   // check which can be loaded to the queue
   for (int i = 0; i < NO_PROCESSES; i++) {
@@ -139,15 +135,24 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
 
       case RUNNABLE:
         printf("ITS a 'RUNNABLE' PROC\n");
-        (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
+        // (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
         break;
       
       case WAITING:
         printf("ITS a 'WAITING' PROC\n");
         break;
 
+      /**
+       * So we will check all the embryo process from table and push it onto the Ready Queue
+       * based on the CLK time
+       */
+
       case EMBRYO:
-        printf("ITS a 'EMBRYO' PROC\n");
+        // printf("ITS a 'EMBRYO' PROC\n");
+        if (CLOCK_TIME >= (*processTT)[i]->arrivalTime) {
+          (*processTT)[i]->state = RUNNABLE;
+          (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
+        }
         break;
 
       case ZOMBIE:
@@ -166,9 +171,16 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
         fprintf(stderr, "Internal err 0x000\n");
     }
   }
-  currStateOfQueue(*queueTable);
 
   return 0;
+}
+
+bool _ALL_Processes_are_in_readyQueue(struct proc ***x) {
+  for (int i = 0; i < NO_PROCESSES; i++) {
+    if ((*x)[i]->state == EMBRYO)
+      return False;
+  }
+  return True;
 }
 
 bool __ALL__DONE__(struct readyQueue *ptr) {
@@ -193,8 +205,9 @@ void turnONQueue(struct proc ***processTT){
   assert(*processTT);
   char namePP[16] = {'\0'};
   for (int i = 0; i < NO_PROCESSES; i++) {
-    namePP[0] = (char)(65 + i);
-    namePP[1] = (char)(65 + i + 1);
+    // namePP[0] = (char)(65 + i);
+    namePP[0] = 'P';
+    namePP[1] = (char)('0' + i + 1);
     (*processTT)[i] = initProcess(namePP, i + 1);
   }
   

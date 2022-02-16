@@ -1,11 +1,27 @@
 #include "../Memory/VirtualMemo/proc.h"
 #include "scheduler.c"
 // #include "syscall.c"
+#include <string.h>
 u_int64_t CLOCK_TIME = 0;
 
 #define SCH_DULE  30
 #define INT_RUPT  31
 
+#define PS(processTT) \
+  printf("PID\tName\tState\tArrival_Time\tCPU_TIME\n"); \
+  for (size_t i = 0; i < NO_PROCESSES; i++)             \
+    printOutProcessDetails(processTT[i]);               \
+  printf("--------\n");
+  
+#define READYQUEPS(readyQueueTT)      \
+  printf("~~~~~~~~\n");               \
+  currStateOfQueue(readyQueueTT);     \
+  printf("~~~~~~~~\n");
+
+/**
+ * @param 1 is the process table containes all the process list which is precomputed
+ * @param 2 represents the readyQueue
+ */
 int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **) = {
   [SCH_DULE] schedulerRoundRobin
 };
@@ -27,21 +43,21 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
         (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
 
-        printf("+| %s [%ld ", processToRun->name, CLOCK_TIME);
 
-        /**
-         * TODO: something to do
-         */
         processToRun->state = RUNNING;
-        /**
-         * TODO: Add another processes which have come and place this in scheduling part
-         */
+        if (CLOCK_TIME == 0) {
+          printf("\n\nCLOCK TICKS == 0 \n\n\n\n");
+        }
+        u_int64_t startTime = CLOCK_TIME;
+
         int qt1 = (*readyQueueRAM)->Qt1;
         while (qt1 > 0 && processToRun->burstTime > 0 ) {
           qt1--;
           (processToRun->burstTime)--;
           CLOCK_TIME++;
+          printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
         }
+        printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
         if (processToRun->burstTime > 0 && qt1 == 0) {
           // reinsert it in second Queue
           // as it has crossed its usage time in most pri queue
@@ -51,38 +67,65 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
         }
         if (processToRun->burstTime == 0 && qt1 >= 0) {
           // free the memory allocated
-          free(processToRun);
+          // ig the free is having som problems
+          // free(processToRun);
+          processToRun->state = DIED;
           processToRun = BLACKHOLE;
         }
-        printf("%ld] |+", CLOCK_TIME);
-
-        /**
-         * TODO: I/O operation support to be added
-         * TODO: PROMOTION of a process using @param{DOWNGRADE_TIME, UPGRADE_TIME}
-         */
-
       }
       break;
     case 2:
       {
+        CLOCK_TIME++;
+        printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
         (*readyQueueRAM)->Q2 = __pop_front((*readyQueueRAM)->Q2);
       }
       break;
     case 3:
       {
+        CLOCK_TIME++;
+        printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
         (*readyQueueRAM)->Q3 = __pop_front((*readyQueueRAM)->Q3);
       }
       break;
     default:
+      CLOCK_TIME++;
+      printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
       fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
   }
   return processToRun;
 }
-/***
- * ASSUME that all the processes has arrival time to be 0
- */
+
+void sortIt(struct proc ***arrayOfProcAssigned) {
+  for (int i = 0; i < NO_PROCESSES; i++) {
+    for (int j = 0; j < NO_PROCESSES - i - 1; j++) {
+      if ((*arrayOfProcAssigned)[j]->arrivalTime > (*arrayOfProcAssigned)[j+1]->arrivalTime) {
+        struct proc *T = (struct proc *)malloc(sizeof(struct proc));
+        T->arrivalTime = (*arrayOfProcAssigned)[j]->arrivalTime;
+        T->state = (*arrayOfProcAssigned)[j]->state;
+        T->PID = (*arrayOfProcAssigned)[j]->PID;
+        T->parent = (*arrayOfProcAssigned)[j]->parent;
+        T->burstTime = (*arrayOfProcAssigned)[j]->burstTime;
+        strcpy(T->name, (*arrayOfProcAssigned)[j]->name);
+        (*arrayOfProcAssigned)[j]->arrivalTime = (*arrayOfProcAssigned)[j+1]->arrivalTime;
+        (*arrayOfProcAssigned)[j]->state = (*arrayOfProcAssigned)[j+1]->state;
+        (*arrayOfProcAssigned)[j]->PID = (*arrayOfProcAssigned)[j+1]->PID;
+        (*arrayOfProcAssigned)[j]->parent = (*arrayOfProcAssigned)[j+1]->parent;
+        (*arrayOfProcAssigned)[j]->burstTime = (*arrayOfProcAssigned)[j+1]->burstTime;
+        strcpy((*arrayOfProcAssigned)[j]->name, (*arrayOfProcAssigned)[j+1]->name);
+        (*arrayOfProcAssigned)[j+1]->arrivalTime = T->arrivalTime;
+        (*arrayOfProcAssigned)[j+1]->state = T->state ;
+        (*arrayOfProcAssigned)[j+1]->PID = T->PID;
+        (*arrayOfProcAssigned)[j+1]->parent = T->parent;
+        (*arrayOfProcAssigned)[j+1]->burstTime = T->burstTime;
+        strcpy((*arrayOfProcAssigned)[j+1]->name, T->name);
+        free(T);
+      }
+    }
+  }
+}
 
 int Smain()
 {
@@ -91,49 +134,35 @@ int Smain()
   initReadyQueue(&readyQueueTT);
   turnONQueue(&processTT);
   buildProcessTable(&processTT);
-  
-  // equavalent to $ ps -la
-  for (size_t i = 0; i < NO_PROCESSES; i++)
-  {
-    printOutProcessDetails(processTT[i]);
-  }
 
-  /**
-   * start the scheduler
-   */
+  sortIt(&processTT);
+
+  PS(processTT)
+
   schedulerRoundRobin(&processTT, &readyQueueTT);
   while (True) {
+    // READYQUEPS(readyQueueTT)
     // if all the queues are empty then stop the computer/shutdown
-    if (__ALL__DONE__(readyQueueTT) == True) {
+    if (__ALL__DONE__(readyQueueTT) == True && _ALL_Processes_are_in_readyQueue(&processTT) == True) {
       break;
     }
     int whichQueue = 0;
     struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue);
     if (callBack == BLACKHOLE) {
       // that particular process has completed no need to add at the end
+      schedulerRoundRobin(&processTT, &readyQueueTT);
       continue;
     }
-    // CPU has done its thing how the time interrupt will occur
-    // followed by scheduling algo to refresh itself
-    // int res = __cpu__can__call__[SCH_DULE](&processTT, &readyQueueTT);
-    // printf("+++++++++++++\n");
-    // printf("+ Verify is it getting it back\n");
-    // ///**, remBurstTime:(%d),*/
-    // printf("+ name:(%s) CLOCK TIME:(%ld)\n",callBack->name, CLOCK_TIME);
-    // printf("+++++++++++++\n");
+    schedulerRoundRobin(&processTT, &readyQueueTT);
 
+    // now insert the poped process which is incomplete
     int ret = schedulerRoundRobinSCH(callBack, &readyQueueTT, whichQueue);
     if (ret == UNDEFINED)
       return UNDEFINED;
-    // printf("~~~~~~~~\n");
-    // currStateOfQueue(readyQueueTT);
-    // printf("~~~~~~~~\n");
+
+    // READYQUEPS(readyQueueTT)
   }
   printf("\n");
 
-  /**
-   * deallocate the memory
-   * as all the processes have completed
-   */
-  return 0;
+  return EXIT_SUCCESS;
 }
