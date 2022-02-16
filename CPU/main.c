@@ -45,9 +45,6 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
 
 
         processToRun->state = RUNNING;
-        if (CLOCK_TIME == 0) {
-          printf("\n\nCLOCK TICKS == 0 \n\n\n\n");
-        }
         u_int64_t startTime = CLOCK_TIME;
 
         int qt1 = (*readyQueueRAM)->Qt1;
@@ -98,6 +95,67 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
   return processToRun;
 }
 
+
+struct proc* __CPU__EXECUTION__AREANONDD__(struct readyQueue **readyQueueRAM, int* whichQueue)
+{
+  int decussion = __which_Queue_cpu_will_access(*readyQueueRAM);
+  struct proc *processToRun = BLACKHOLE;
+  *whichQueue = decussion;
+
+  switch (decussion) {
+    case 1:
+      {
+        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
+        (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
+
+
+        processToRun->state = RUNNING;
+        u_int64_t startTime = CLOCK_TIME;
+
+        int qt1 = (*readyQueueRAM)->Qt1;
+        while (qt1 > 0 && processToRun->burstTime > 0 ) {
+          qt1--;
+          (processToRun->burstTime)--;
+          CLOCK_TIME++;
+        }
+        printf("+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+        if (processToRun->burstTime > 0 && qt1 == 0) {
+          // reinsert it in second Queue
+          // as it has crossed its usage time in most pri queue
+          // just for now place the removed queue to the same qeue which is here Q1
+          // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
+          processToRun->state = RUNNABLE;
+        }
+        if (processToRun->burstTime == 0 && qt1 >= 0) {
+          // free the memory allocated
+          // ig the free is having som problems
+          // free(processToRun);
+          processToRun->state = DIED;
+          processToRun = BLACKHOLE;
+        }
+      }
+      break;
+    case 2:
+      {
+        CLOCK_TIME++;
+        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
+        (*readyQueueRAM)->Q2 = __pop_front((*readyQueueRAM)->Q2);
+      }
+      break;
+    case 3:
+      {
+        CLOCK_TIME++;
+        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
+        (*readyQueueRAM)->Q3 = __pop_front((*readyQueueRAM)->Q3);
+      }
+      break;
+    default:
+      CLOCK_TIME++;
+      fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
+  }
+  return processToRun;
+}
+
 void sortIt(struct proc ***arrayOfProcAssigned) {
   for (int i = 0; i < NO_PROCESSES; i++) {
     for (int j = 0; j < NO_PROCESSES - i - 1; j++) {
@@ -127,8 +185,9 @@ void sortIt(struct proc ***arrayOfProcAssigned) {
   }
 }
 
-int Smain()
+int SmainDebug()
 {
+  printf("\t\t\t\t{{{{ Devlopment mode }}}}\n\n");
   struct proc **processTT = BLACKHOLE;
   struct readyQueue *readyQueueTT = BLACKHOLE;
   initReadyQueue(&readyQueueTT);
@@ -165,4 +224,59 @@ int Smain()
   printf("\n");
 
   return EXIT_SUCCESS;
+}
+
+
+int SmainRun()
+{
+  printf("\t\t\t\t{{{{ Runner mode }}}}\n\n");
+  struct proc **processTT = BLACKHOLE;
+  struct readyQueue *readyQueueTT = BLACKHOLE;
+  initReadyQueue(&readyQueueTT);
+  turnONQueue(&processTT);
+  buildProcessTable(&processTT);
+
+  sortIt(&processTT);
+
+  PS(processTT)
+
+  schedulerRoundRobin(&processTT, &readyQueueTT);
+  while (True) {
+    // READYQUEPS(readyQueueTT)
+    // if all the queues are empty then stop the computer/shutdown
+    if (__ALL__DONE__(readyQueueTT) == True && _ALL_Processes_are_in_readyQueue(&processTT) == True) {
+      break;
+    }
+    int whichQueue = 0;
+    struct proc *callBack = __CPU__EXECUTION__AREANONDD__(&readyQueueTT, &whichQueue);
+    if (callBack == BLACKHOLE) {
+      // that particular process has completed no need to add at the end
+      schedulerRoundRobin(&processTT, &readyQueueTT);
+      continue;
+    }
+    schedulerRoundRobin(&processTT, &readyQueueTT);
+
+    // now insert the poped process which is incomplete
+    int ret = schedulerRoundRobinSCH(callBack, &readyQueueTT, whichQueue);
+    if (ret == UNDEFINED)
+      return UNDEFINED;
+
+    // READYQUEPS(readyQueueTT)
+  }
+  printf("\n");
+
+  return EXIT_SUCCESS;
+}
+
+int SMain(int param) {
+  // this will call which main function
+  int ret = 0;
+  if (param == 1) {
+    ret = SmainDebug();
+  } else if (param == 2) {
+    ret = SmainRun();
+  } else {
+    return EXIT_FAILURE;
+  }
+  return ret;
 }

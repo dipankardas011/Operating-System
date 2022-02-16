@@ -66,7 +66,6 @@ void currStateOfQueue(struct readyQueue *rQue) {
 
 /////// SETUP for the readyQueue  ///////
 int initReadyQueue(struct readyQueue **pTable) {
-  CLOCK_TIME = 1;
   *pTable = (struct readyQueue *) malloc(sizeof(struct readyQueue));
   assert(*pTable);
 
