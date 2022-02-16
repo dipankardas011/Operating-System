@@ -120,7 +120,7 @@ int schedulerRoundRobinSCH(struct proc *processToAdd, struct readyQueue **queueT
 }
 
 
-int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable){
+int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable, int mode){
   
   // CLOCK_TIME++;
 
@@ -129,16 +129,19 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
 
     switch((*processTT)[i]->state) {
       case RUNNING:
-        printf("ITS a 'RUNNING' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'RUNNING' PROC\n");
         break;
 
       case RUNNABLE:
-        printf("ITS a 'RUNNABLE' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'RUNNABLE' PROC\n");
         // (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
         break;
       
       case WAITING:
-        printf("ITS a 'WAITING' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'WAITING' PROC\n");
         break;
 
       /**
@@ -147,7 +150,8 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
        */
 
       case EMBRYO:
-        // printf("ITS a 'EMBRYO' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'EMBRYO' PROC\n");
         if (CLOCK_TIME >= (*processTT)[i]->arrivalTime) {
           (*processTT)[i]->state = RUNNABLE;
           (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
@@ -155,19 +159,23 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
         break;
 
       case ZOMBIE:
-        printf("ITS a 'ZOMBIE' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'ZOMBIE' PROC\n");
         break;
 
       case SLEEPING:
-        printf("ITS a 'SLEEPING' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'SLEEPING' PROC\n");
         break;
       
       case DIED:
-        printf("ITS a 'DIED' PROC\n");
+        if (mode == 1)
+          printf("ITS a 'DIED' PROC\n");
         break;
 
       default:
-        fprintf(stderr, "Internal err 0x000\n");
+        if (mode == 1)
+          fprintf(stderr, "Internal err 0x000\n");
     }
   }
 

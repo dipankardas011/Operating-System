@@ -13,6 +13,7 @@ int main(int argc, char const *argv[])
     exit(0);
   }
   printf("\n$$$$ BOOTING $$$$\n\n");
+  printf("%s\n\n", argv[1]);
   if (argv[1][0] == '-' && argv[1][1] == '-' && argv[1][2] == 'd') {
     int ert = SMain(1);
     assert(ert == 0);

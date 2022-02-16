@@ -12,7 +12,7 @@ if [ $option -eq 0 ] ; then
 elif [ $option -eq 1 ] ; then
   make runDebug
 elif [ $option -eq 2 ] ; then
-  make runDebug
+  make run
 else
   echo "ERROR Inv choice"
   exit 1

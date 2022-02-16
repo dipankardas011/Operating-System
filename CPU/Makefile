@@ -1,17 +1,19 @@
 CC=gcc
 Wall=-g -Wall
+EXEC=a.out
+
 
 build: *.h *.c
 	$(CC) $(Wall) CPUmain.c
 
 run:
-	./a.out --n
+	./$(EXEC) --n
 
 runDebug:
-	./a.out --d
+	./$(EXEC) --d
 
 help:
-	./a.out
+	./$(EXEC)
 
 clean:
 	rm *.out

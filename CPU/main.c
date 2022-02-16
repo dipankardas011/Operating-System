@@ -22,7 +22,7 @@ u_int64_t CLOCK_TIME = 0;
  * @param 1 is the process table containes all the process list which is precomputed
  * @param 2 represents the readyQueue
  */
-int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **) = {
+int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **, int) = {
   [SCH_DULE] schedulerRoundRobin
 };
 
@@ -96,7 +96,7 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
 }
 
 
-struct proc* __CPU__EXECUTION__AREANONDD__(struct readyQueue **readyQueueRAM, int* whichQueue)
+struct proc* __CPU__EXECUTION__AREA_NONDD__(struct readyQueue **readyQueueRAM, int* whichQueue)
 {
   int decussion = __which_Queue_cpu_will_access(*readyQueueRAM);
   struct proc *processToRun = BLACKHOLE;
@@ -151,7 +151,7 @@ struct proc* __CPU__EXECUTION__AREANONDD__(struct readyQueue **readyQueueRAM, in
       break;
     default:
       CLOCK_TIME++;
-      fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
+      // fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
   }
   return processToRun;
 }
@@ -198,7 +198,7 @@ int SmainDebug()
 
   PS(processTT)
 
-  schedulerRoundRobin(&processTT, &readyQueueTT);
+  schedulerRoundRobin(&processTT, &readyQueueTT, 1);
   while (True) {
     // READYQUEPS(readyQueueTT)
     // if all the queues are empty then stop the computer/shutdown
@@ -209,10 +209,10 @@ int SmainDebug()
     struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue);
     if (callBack == BLACKHOLE) {
       // that particular process has completed no need to add at the end
-      schedulerRoundRobin(&processTT, &readyQueueTT);
+      schedulerRoundRobin(&processTT, &readyQueueTT, 1);
       continue;
     }
-    schedulerRoundRobin(&processTT, &readyQueueTT);
+    schedulerRoundRobin(&processTT, &readyQueueTT, 1);
 
     // now insert the poped process which is incomplete
     int ret = schedulerRoundRobinSCH(callBack, &readyQueueTT, whichQueue);
@@ -240,7 +240,7 @@ int SmainRun()
 
   PS(processTT)
 
-  schedulerRoundRobin(&processTT, &readyQueueTT);
+  schedulerRoundRobin(&processTT, &readyQueueTT, 0);
   while (True) {
     // READYQUEPS(readyQueueTT)
     // if all the queues are empty then stop the computer/shutdown
@@ -248,13 +248,13 @@ int SmainRun()
       break;
     }
     int whichQueue = 0;
-    struct proc *callBack = __CPU__EXECUTION__AREANONDD__(&readyQueueTT, &whichQueue);
+    struct proc *callBack = __CPU__EXECUTION__AREA_NONDD__(&readyQueueTT, &whichQueue);
     if (callBack == BLACKHOLE) {
       // that particular process has completed no need to add at the end
-      schedulerRoundRobin(&processTT, &readyQueueTT);
+      schedulerRoundRobin(&processTT, &readyQueueTT, 0);
       continue;
     }
-    schedulerRoundRobin(&processTT, &readyQueueTT);
+    schedulerRoundRobin(&processTT, &readyQueueTT, 0);
 
     // now insert the poped process which is incomplete
     int ret = schedulerRoundRobinSCH(callBack, &readyQueueTT, whichQueue);
