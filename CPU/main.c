@@ -27,7 +27,7 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
         (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
 
-        printf("+| %s |+", processToRun->name);
+        printf("+| %s [%ld ", processToRun->name, CLOCK_TIME);
 
         /**
          * TODO: something to do
@@ -54,6 +54,7 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
           free(processToRun);
           processToRun = BLACKHOLE;
         }
+        printf("%ld] |+", CLOCK_TIME);
 
         /**
          * TODO: I/O operation support to be added
