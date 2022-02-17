@@ -85,5 +85,5 @@ char whatIsState(enum procState x) {
 }
 
 void printOutProcessDetails(struct proc *ptr) {
-  printf("%d\t%s\t%c\t%d\t%d\t%d\t%d\n", ptr->PID, ptr->name, whatIsState(ptr->state), ptr->arrivalTime, ptr->burstTime1, ptr->IOTime, ptr->burstTime2);
+  printf("%d  %5s  %5c  %5d  %5d  %5d  %5d\n", ptr->PID, ptr->name, whatIsState(ptr->state), ptr->arrivalTime, ptr->burstTime1, ptr->IOTime, ptr->burstTime2);
 }

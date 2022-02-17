@@ -28,3 +28,8 @@ void refresh(struct IOQueue **que) {
     iter = iter->next;
   }
 }
+
+void initializeIOQueue(struct IOQueue **qq) {
+  *qq = (struct IOQueue *)malloc(sizeof(struct IOQueue));
+  (*qq)->BUFFER_QUEUE = initKQueue();
+}
