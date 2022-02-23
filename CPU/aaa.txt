@@ -1,0 +1,53 @@
+Enter [ 1 ] debug mode
+Enter [ 2 ] normal mode
+Enter [ 0 ] help mode
+gcc -g -Wall CPUmain.c
+./a.out --d
+
+$$$$ BOOTING $$$$
+
+				{{{{ Devlopment mode }}}}
+
+Enter the {Arrival Time},{Burst time1},{IO time},{Burst time2} for process_[ 0 ]
+PID  Name  State  Arri_Time  CPU_TIME1  IO_TIME  CPU_TIME2
+1     P1      E      0      1      2      1
+--------
+ITS a 'EMBRYO' PROC
+HHHHAHAHAHAHHAISISISEMPTY
+
+[[[[[ CLK TICK [1] ]]]]]
+~~PROCESS+| P1 [0 - 1] |+
+PID  Name  State  Arri_Time  CPU_TIME1  IO_TIME  CPU_TIME2
+1     P1      W      0      0      2      1
+--------
+$$$$$$$$$$
+ | state[0], IO [2] | 
+$$$$$$$$$$
+ITS a 'WAITING' PROC
+HHHHAHAHAHAHHAISISISEMPTY
+HHHHAHAHAHAHHA
+
+[[[[[ CLK TICK [2] ]]]]]
+PID  Name  State  Arri_Time  CPU_TIME1  IO_TIME  CPU_TIME2
+1     P1      W      0      0      1      1
+--------
+ITS a 'WAITING' PROC
+HHHHAHAHAHAHHAISISISEMPTY
+HHHHAHAHAHAHHA
+
+[[[[[ CLK TICK [3] ]]]]]
+PID  Name  State  Arri_Time  CPU_TIME1  IO_TIME  CPU_TIME2
+1     P1      z      0      0      0      1
+--------
+ITS a 'READY' PROC after wakeup from I/O
+HHHHAHAHAHAHHAISISISEMPTY
+
+[[[[[ CLK TICK [4] ]]]]]
+~~PROCESS+| P1 [3 - 4] |+
+PID  Name  State  Arri_Time  CPU_TIME1  IO_TIME  CPU_TIME2
+1     P1      T      0      0      0      0
+--------
+ITS a 'DIED' PROC
+
+Compiled it✅ 
+rm *.out

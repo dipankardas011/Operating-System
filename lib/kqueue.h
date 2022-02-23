@@ -178,6 +178,14 @@ void * __front__cpu__load__(struct __LinkListHeaders *TOPKPTR)
   return (isEmpty(TOPKPTR->front) == True) ? BLACKHOLE : TOPKPTR->front->data_ptr;
 }
 
+void ___dis__queue(struct __LinkListHeaders *TOPKPTR) {
+  struct __LinkList *i = TOPKPTR->front;
+  while (i!=BLACKHOLE) {
+    printf(" | state[%d], IO [%d] | \n", ((struct proc *)(i->data_ptr))->state, ((struct proc *)(i->data_ptr))->IOTime);
+    i = i->next;
+  }
+}
+
 struct __LinkListHeaders * __removeByGivenData(struct __LinkListHeaders *TOPKPTR, void *data) 
 {
   struct __LinkList *prevPtr = BLACKHOLE;

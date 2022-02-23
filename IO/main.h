@@ -14,8 +14,8 @@ struct IOQueue {
   struct __LinkListHeaders *BUFFER_QUEUE;
 };
 void printOutLoudPatQueue(struct __LinkListHeaders *ptr);
-void refresh(struct IOQueue **que) {
-  struct __LinkList *iter = (*que)->BUFFER_QUEUE->front;
+struct IOQueue *refresh(struct IOQueue *que) {
+  struct __LinkList *iter = que->BUFFER_QUEUE->front;
   /**
    * if the IOTIME of any becomes == 0 then swap the value with the head of the queue for faster access
    */
@@ -30,11 +30,15 @@ void refresh(struct IOQueue **que) {
       /**
        * TODO: insert the poped process from the BUffer to the ready queue
        */
-      (*que)->BUFFER_QUEUE = __removeByGivenData((*que)->BUFFER_QUEUE, x);
-    } else {
+      que->BUFFER_QUEUE = __removeByGivenData(que->BUFFER_QUEUE, x);
+      ___dis__queue(que->BUFFER_QUEUE);
+    }
+    else
+    {
       iter = iter->next;
     }
   }
+  return que;
 }
 
 void initializeIOQueue(struct IOQueue **qq) {

@@ -59,7 +59,9 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
             (processToRun->burstTime1)--;
 
             // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
-            refresh(bufferQueue);
+            // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+            *bufferQueue = refresh(*bufferQueue);
+            // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
 
             CLOCK_TIME++;
             printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
@@ -73,14 +75,10 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
             processToRun->state = RUNNABLE;
           }
           if (processToRun->burstTime1 == 0 && qt1 >= 0) {
-            // free the memory allocated
-            // ig the free is having som problems
-            // processToRun->state = DIED;
             processToRun->state = WAITING;
             /**
              * IMP: processToRun will send NULL only when all the Activity is done 
              */
-            // processToRun = BLACKHOLE;
           }
         }
         else if (processToRun->IOTime == 0)
@@ -91,7 +89,9 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
             (processToRun->burstTime2)--;
             
             // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
-            refresh(bufferQueue);
+            ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+            *bufferQueue = refresh(*bufferQueue);
+            ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
 
             CLOCK_TIME++;
             printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
@@ -132,6 +132,7 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
       break;
     default:
       CLOCK_TIME++;
+      *bufferQueue = refresh(*bufferQueue);
       printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
       fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
   }
@@ -301,6 +302,8 @@ int SmainDebug()
     }
     int whichQueue = 0;
     struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue, &ioBuffer);
+    PS(processTT)
+
     if (callBack == BLACKHOLE) {
       // that particular process has completed no need to add at the end
       schedulerRoundRobin(&processTT, &readyQueueTT, 1);
@@ -309,7 +312,13 @@ int SmainDebug()
     else if (callBack->state == WAITING) {
       // add it to the IOBUFFER
       ioBuffer->BUFFER_QUEUE = __push_rear(ioBuffer->BUFFER_QUEUE, callBack);
+      // printf("$$$$$$$$$$\n");
+      // ___dis__queue(ioBuffer->BUFFER_QUEUE);
+      // printf("$$$$$$$$$$\n");
+      schedulerRoundRobin(&processTT, &readyQueueTT, 1);
+      continue;
     }
+
     schedulerRoundRobin(&processTT, &readyQueueTT, 1);
 
     // now insert the poped process which is incomplete
