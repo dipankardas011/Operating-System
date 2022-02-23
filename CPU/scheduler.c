@@ -5,7 +5,7 @@
 #define UNDEFINED       0x9999
 #define DOWNGRADE_TIME  30
 #define UPGRADE_TIME    20
-#define NO_PROCESSES    5
+#define NO_PROCESSES    1
 /**
  *        ready queue all are Round Robin
  *     ==========================
@@ -129,7 +129,7 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
     switch((*processTT)[i]->state) {
       case RUNNING:
         if (mode == 1)
-          printf("ITS a 'RUNNING' PROC\n");
+          // printf("ITS a 'RUNNING' PROC\n");
         break;
 
       case RUNNABLE:
@@ -141,6 +141,11 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
       case WAITING:
         if (mode == 1)
           printf("ITS a 'WAITING' PROC\n");
+        
+        break;
+      case READY:
+        if (mode == 1)
+          printf("ITS a 'READY' PROC after wakeup from I/O\n");
         break;
 
       /**

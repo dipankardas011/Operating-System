@@ -300,7 +300,7 @@ int SmainDebug()
       break;
     }
     int whichQueue = 0;
-    struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue);
+    struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue, &ioBuffer);
     if (callBack == BLACKHOLE) {
       // that particular process has completed no need to add at the end
       schedulerRoundRobin(&processTT, &readyQueueTT, 1);

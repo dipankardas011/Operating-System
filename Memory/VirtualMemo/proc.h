@@ -12,6 +12,7 @@ enum procState
   RUNNING,
   RUNNABLE,
   DIED,
+  READY,
   ZOMBIE
 };
 
@@ -67,7 +68,7 @@ struct proc *initProcess(char *name, int id)
 char whatIsState(enum procState x) {
   switch(x) {
     case RUNNABLE:
-      return 'r';
+      return 'Z';
     case RUNNING:
       return 'R';
     case SLEEPING:
@@ -80,6 +81,8 @@ char whatIsState(enum procState x) {
       return 'T';
     case ZOMBIE:
       return 'Z';
+    case READY:
+      return 'z';
   }
   return '!';
 }
