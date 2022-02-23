@@ -31,7 +31,9 @@ int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **, int) = {
  * @return NULL when no process has to be added to the ready queue(means its done)
  * otherwise the process which has to be added will be returned
  */
-struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* whichQueue)
+struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, 
+                                      int* whichQueue, 
+                                      struct IOQueue **bufferQueue)
 {
   int decision = __which_Queue_cpu_will_access(*readyQueueRAM);
   struct proc *processToRun = BLACKHOLE;
@@ -55,6 +57,10 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
           while (qt1 > 0 && processToRun->burstTime1 > 0 ) {
             qt1--;
             (processToRun->burstTime1)--;
+
+            // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
+            refresh(bufferQueue);
+
             CLOCK_TIME++;
             printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
           }
@@ -77,12 +83,16 @@ struct proc* __CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM, int* wh
             // processToRun = BLACKHOLE;
           }
         }
-        else 
+        else if (processToRun->IOTime == 0)
         {
           // first phase is completed
           while (qt1 > 0 && processToRun->burstTime2 > 0 ) {
             qt1--;
             (processToRun->burstTime2)--;
+            
+            // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
+            refresh(bufferQueue);
+
             CLOCK_TIME++;
             printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
           }
@@ -298,6 +308,7 @@ int SmainDebug()
     }
     else if (callBack->state == WAITING) {
       // add it to the IOBUFFER
+      ioBuffer->BUFFER_QUEUE = __push_rear(ioBuffer->BUFFER_QUEUE, callBack);
     }
     schedulerRoundRobin(&processTT, &readyQueueTT, 1);
 

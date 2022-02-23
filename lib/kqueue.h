@@ -177,3 +177,32 @@ void * __front__cpu__load__(struct __LinkListHeaders *TOPKPTR)
 {
   return (isEmpty(TOPKPTR->front) == True) ? BLACKHOLE : TOPKPTR->front->data_ptr;
 }
+
+struct __LinkListHeaders * __removeByGivenData(struct __LinkListHeaders *TOPKPTR, void *data) 
+{
+  struct __LinkList *prevPtr = BLACKHOLE;
+  struct __LinkList *currPtr = TOPKPTR->front;
+
+  if (TOPKPTR->front->data_ptr == data)
+    return __pop_front(TOPKPTR);
+
+  if (currPtr == BLACKHOLE)
+    return TOPKPTR;
+  
+  while(currPtr != BLACKHOLE && currPtr->data_ptr != data) {
+    prevPtr = currPtr;
+    currPtr = currPtr->next;
+  }
+  if (currPtr == BLACKHOLE)   // not found
+    return TOPKPTR;
+
+  struct __LinkList *temp = currPtr;
+  if (temp->next == BLACKHOLE) {
+    // last element to be removed
+    return __pop_rear(TOPKPTR);
+  }
+  prevPtr->next = temp->next;
+  temp->next->prev = prevPtr;
+  free(temp);
+  return TOPKPTR;
+}
