@@ -12,6 +12,7 @@ enum procState
   RUNNING,
   RUNNABLE,
   DIED,
+  READY,
   ZOMBIE
 };
 
@@ -38,7 +39,9 @@ struct proc
   // struct scheduling sched;
   // struct niceness ni;
   uint arrivalTime;
-  uint burstTime;
+  uint burstTime1;
+  uint burstTime2;
+  uint IOTime;
 };
 
 struct proc *initProcess(char *name, int id)
@@ -55,20 +58,17 @@ struct proc *initProcess(char *name, int id)
   // temp->state = RUNNABLE;
   temp->state = EMBRYO;
   temp->arrivalTime = 0;
-  temp->burstTime = 0;
+  temp->burstTime1 = 0;
+  temp->IOTime = 0;
+  temp->burstTime2 = 0;
 
   return temp;
-}
-
-struct proc *setState(struct proc *ptr, enum procState dd) {
-  ptr->state = dd;
-  return ptr;
 }
 
 char whatIsState(enum procState x) {
   switch(x) {
     case RUNNABLE:
-      return 'r';
+      return 'Z';
     case RUNNING:
       return 'R';
     case SLEEPING:
@@ -80,11 +80,13 @@ char whatIsState(enum procState x) {
     case DIED:
       return 'T';
     case ZOMBIE:
-      return 'Z';
+      return 'z';
+    case READY:
+      return 'A';
   }
   return '!';
 }
 
 void printOutProcessDetails(struct proc *ptr) {
-  printf("%d\t%s\t%c\t%d\t%d\n", ptr->PID, ptr->name, whatIsState(ptr->state), ptr->arrivalTime, ptr->burstTime);
+  printf("%d  %5s  %5c  %5d  %5d  %5d  %5d\n", ptr->PID, ptr->name, whatIsState(ptr->state), ptr->arrivalTime, ptr->burstTime1, ptr->IOTime, ptr->burstTime2);
 }
