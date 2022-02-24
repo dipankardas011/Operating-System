@@ -5,7 +5,7 @@
 #define UNDEFINED       0x9999
 #define DOWNGRADE_TIME  30
 #define UPGRADE_TIME    20
-#define NO_PROCESSES    4
+#define NO_PROCESSES    5
 /**
  *        ready queue all are Round Robin
  *     ==========================

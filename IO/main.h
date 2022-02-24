@@ -23,7 +23,7 @@ struct IOQueue *refresh(struct IOQueue *que) {
 
     (((struct proc *)(iter->data_ptr))->IOTime)--;
 
-    if ((((struct proc *)(iter->data_ptr))->IOTime) == 0) {
+    if ((((struct proc *)(iter->data_ptr))->IOTime) <= 0) {
       void *x = iter->data_ptr;
       ((struct proc *)(iter->data_ptr))->state = READY;
       iter = iter->next;

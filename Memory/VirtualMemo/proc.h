@@ -80,9 +80,9 @@ char whatIsState(enum procState x) {
     case DIED:
       return 'T';
     case ZOMBIE:
-      return 'Z';
-    case READY:
       return 'z';
+    case READY:
+      return 'A';
   }
   return '!';
 }
