@@ -14,15 +14,15 @@ elif [ $option -eq 1 ] ; then
 elif [ $option -eq 2 ] ; then
   make run
 else
-  echo "ERROR Inv choice"
+  echo -e "\n$(tput setaf 3)$(tput bold)INV Option$(tput init)"
   exit 1
 fi
 ret=`echo $?`
 if [ $ret -eq 0 ]
 then
-  echo "Compiled it✅ "
+  echo -e "\n$(tput setaf 2)$(tput bold)Successful Compilation$(tput init)"
 else
-  echo "Error❌ "
+  echo -e "\n$(tput setaf 1)$(tput bold)ERROR$(tput init)"
   exit 0
 fi
 make clean
