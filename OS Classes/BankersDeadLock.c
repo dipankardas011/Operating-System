@@ -1,5 +1,5 @@
 /**
- * TODO: 
+ * DONE: 
  * * safe sequence
  * * resource alocation
  * 
@@ -67,8 +67,38 @@ bool safeSequence(struct processPool *ptable, int process, int resources)
 
 
 
-bool resourceAlloc(struct processPool *ptable, int size, int sizzz) 
-{}
+bool resourceAlloc(struct processPool *ptable, int process, int resources, int* request, int Idxreq) 
+{
+  for (int i = 0; i < resources; i++) {
+    if (request[i] > ptable[Idxreq].need[i] || request[i] > available[i])
+      return false;
+  }
+
+  if (safeSequence(ptable, process, resources)) {
+
+    for (int i = 0; i < resources; i++) {
+      available[i] -= request[i];
+      ptable[Idxreq].allocated[i] += request[i];
+      ptable[Idxreq].need[i] -= request[i];
+    }
+
+    if (safeSequence(ptable, process, resources)) {
+      return true;
+    }
+    
+    // revert back
+    for (int i = 0; i < resources; i++) {
+      available[i] += request[i];
+      ptable[Idxreq].allocated[i] -= request[i];
+      ptable[Idxreq].need[i] += request[i];
+    }
+    return false;
+    
+  }
+  
+  return false;
+  
+}
 
 
 
@@ -136,6 +166,25 @@ int main(int argc, char const *argv[])
 
   ps_aux(proc, N, noProc);
   printf("Safe: %s\n", (safeSequence(proc, noProc, N)) ? "✅" : "❌");
+
+
+  int *request = (int*)malloc(sizeof(int)*N);
+  int RR;
+  printf("Enter process number [0..N-1]: ");
+  scanf("%d", &RR);
+  printf("Enter the request values: ");
+  for (int i = 0; i < N; i++)
+    scanf("%d", request + i);
+
+  (resourceAlloc(proc, noProc, N, request, RR)) ? 
+      system("echo \"$(tput setaf 2)$(tput bold)ALLOCATED: $(tput init) Request granted\"") 
+      : system("echo \"$(tput setaf 1)$(tput bold)UNALLOCATED: $(tput init) Request is INV\"");
+
+  // ps_aux(proc, N, noProc);
+
+  free(request);
+  free(proc);
+  free(available);
 
   remove(argv[0]);
   return 0;
