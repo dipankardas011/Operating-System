@@ -22,8 +22,8 @@ u_int64_t CLOCK_TIME = 0;
  * @param 1 is the process table containes all the process list which is precomputed
  * @param 2 represents the readyQueue
  */
-int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **, int) = {
-    [SCH_DULE] schedulerRoundRobin};
+// int (*__cpu__can__call__[])(struct proc ***, struct readyQueue **, int) = {
+//     [SCH_DULE] schedulerRoundRobin};
 
 /**
  * @return NULL when no process has to be added to the ready queue(means its done)
@@ -51,13 +51,15 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
 
         if (processToRun->burstTime1 > 0)
         {
-            // first phase is not completed
             while (qt1 > 0 && processToRun->burstTime1 > 0)
             {
                 qt1--;
                 (processToRun->burstTime1)--;
 
-                // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
+                /**
+                 * @def refresh IOBuffer in same clock cycle 
+                 * assuming it is not processed by the processor
+                 */
                 // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
                 *bufferQueue = refresh(*bufferQueue);
                 // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
@@ -86,7 +88,6 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
         }
         else if (processToRun->IOTime == 0)
         {
-            // first phase is completed
             while (qt1 > 0 && processToRun->burstTime2 > 0)
             {
                 qt1--;
@@ -122,6 +123,9 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
     break;
     case 2:
     {
+        /**
+         * TODO: write the Queue2
+         */
         CLOCK_TIME++;
         printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
@@ -130,6 +134,9 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
     break;
     case 3:
     {
+        /**
+         * TODO: write the Queue3
+         */
         CLOCK_TIME++;
         printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
         processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
@@ -137,6 +144,9 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
     }
     break;
     default:
+        /**
+         * STATUS: DONE
+         */
         CLOCK_TIME++;
         *bufferQueue = refresh(*bufferQueue);
         printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
@@ -146,7 +156,7 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
 }
 
 /**
- * TODO: Do the same changes
+ * TODO: Do the same changes and add description
  */
 struct proc *__CPU__EXECUTION__AREA_NONDD__(struct readyQueue **readyQueueRAM,
                                             int *whichQueue,
@@ -253,6 +263,12 @@ struct proc *__CPU__EXECUTION__AREA_NONDD__(struct readyQueue **readyQueueRAM,
     return processToRun;
 }
 
+/**
+ * REQUIREMENT: as the user's dat provided is not sorted according 
+ * to the arrival time of each process.
+ * 
+ * COMPLEXITY: O(N^2) BUBBLE SORT as the NO_PROCESSES are < 10 so its *GOOD*
+ */
 void sortIt(struct proc ***arrayOfProcAssigned)
 {
     for (int i = 0; i < NO_PROCESSES; i++)
@@ -368,6 +384,7 @@ int SmainRun()
         // if all the queues are empty then stop the computer/shutdown
         /**
          * TODO: Added the check for the whether the IOBUFFER IS empty or not
+         * * ig it is DONE
          * a case can be that ready queue is over and all the processes are inside the buffer
          */
         if (__ALL__DONE__(readyQueueTT) == True && _ALL_Processes_are_in_readyQueue(&processTT) == True)
