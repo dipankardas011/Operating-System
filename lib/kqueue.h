@@ -1,9 +1,9 @@
 /**
- * 
+ *
  * @author Dipankar Das
  * @date dd-mm-yyy
  * @version 0.xx.xx
- * 
+ *
  */
 #include <stdlib.h>
 #include <stdlib.h>
@@ -12,10 +12,11 @@
 #define BLACKHOLE NULL
 #endif
 
-typedef enum boolean {
-  False,
-  True
-}bool;
+typedef enum boolean
+{
+    False,
+    True
+} bool;
 
 /**
  * Double Circular Linklist
@@ -25,50 +26,54 @@ typedef enum boolean {
  */
 struct __LinkList
 {
-  void                *data_ptr;
-  struct __LinkList   *next;
-  struct __LinkList   *prev;
+    void *data_ptr;
+    struct __LinkList *next;
+    struct __LinkList *prev;
 };
 
-struct __LinkListHeaders 
+struct __LinkListHeaders
 {
-  struct __LinkList     *front;
-  struct __LinkList     *rear;
+    struct __LinkList *front;
+    struct __LinkList *rear;
 };
+
 /**
  * TODO: to be filled
  */
 // Before operating call this function
-struct __LinkListHeaders * initKQueue() 
+struct __LinkListHeaders *initKQueue()
 {
-  struct __LinkListHeaders *tempK = 
-          (struct __LinkListHeaders *)malloc(sizeof(struct __LinkListHeaders));
-  assert(tempK != BLACKHOLE);
-  tempK->front = tempK->rear = BLACKHOLE;
-  return tempK;
+    struct __LinkListHeaders *tempK =
+        (struct __LinkListHeaders *)malloc(sizeof(struct __LinkListHeaders));
+    assert(tempK != BLACKHOLE);
+    tempK->front = tempK->rear = BLACKHOLE;
+    return tempK;
 }
-bool isEmpty(struct __LinkList *ptr) {
-  return (ptr == BLACKHOLE) ? True : False;
+
+bool isEmpty(struct __LinkList *ptr)
+{
+    return (ptr == BLACKHOLE) ? True : False;
 }
+
 /**
  * TODO: to be filled
  */
 // before forgetting about the pointer
-struct __LinkListHeaders * remKQueue(struct __LinkListHeaders* TOPKPTR) 
+struct __LinkListHeaders *remKQueue(struct __LinkListHeaders *TOPKPTR)
 {
-  // using traditional loop for removal
-  struct __LinkList *temp = TOPKPTR->front;
-  struct __LinkList *freer = BLACKHOLE;
-  while (temp != BLACKHOLE) {
-    freer = temp;
-    temp = temp->next;
-    free(freer);
-  }
-  TOPKPTR->front = TOPKPTR->rear = BLACKHOLE;
-  temp = BLACKHOLE;
-  freer = BLACKHOLE;
-  free(TOPKPTR);
-  return BLACKHOLE;
+    // using traditional loop for removal
+    struct __LinkList *temp = TOPKPTR->front;
+    struct __LinkList *freer = BLACKHOLE;
+    while (temp != BLACKHOLE) {
+        freer = temp;
+        temp = temp->next;
+        free(freer);
+    }
+    TOPKPTR->front = TOPKPTR->rear = BLACKHOLE;
+    temp = BLACKHOLE;
+    freer = BLACKHOLE;
+    free(TOPKPTR);
+    return BLACKHOLE;
 }
 
 /**
@@ -76,141 +81,142 @@ struct __LinkListHeaders * remKQueue(struct __LinkListHeaders* TOPKPTR)
  * @param iData it takes the insert data to be inserted
  * @return 1 means success 0 means failure
  */
-struct __LinkListHeaders * __push_front(struct __LinkListHeaders *TOPKPTR, void *iData) 
+struct __LinkListHeaders *__push_front(struct __LinkListHeaders *TOPKPTR, void *iData)
 {
-  struct __LinkList *front = (struct __LinkList *)malloc(sizeof(struct __LinkList));
-  assert(front);
-  front->data_ptr = iData;
-  front->prev = BLACKHOLE;
-  front->next = BLACKHOLE;
+    struct __LinkList *front = (struct __LinkList *)malloc(sizeof(struct __LinkList));
+    assert(front);
+    front->data_ptr = iData;
+    front->prev = BLACKHOLE;
+    front->next = BLACKHOLE;
 
-  if (isEmpty(TOPKPTR->front) == True) {
-    TOPKPTR->front = TOPKPTR->rear = front;
+    if (isEmpty(TOPKPTR->front) == True) {
+        TOPKPTR->front = TOPKPTR->rear = front;
+        return TOPKPTR;
+    }
+
+    front->next = TOPKPTR->front;
+    TOPKPTR->front->prev = front;
+    TOPKPTR->front = front;
+
+    assert(TOPKPTR->front->data_ptr == iData);
     return TOPKPTR;
-  }
-
-  front->next = TOPKPTR->front;
-  TOPKPTR->front->prev = front;
-  TOPKPTR->front = front;
-
-  assert(TOPKPTR->front->data_ptr == iData);
-  return TOPKPTR;
-}
-
-
-/**
- * TODO: to be filled
- */
-struct __LinkListHeaders * __push_rear(struct __LinkListHeaders *TOPKPTR, void *iData) 
-{
-  struct __LinkList *rear = (struct __LinkList *)malloc(sizeof(struct __LinkList));
-  assert(rear);
-  rear->data_ptr = iData;
-  
-  rear->next = BLACKHOLE;
-  rear->prev = BLACKHOLE;
-
-  if (isEmpty(TOPKPTR->rear) == True) {
-    TOPKPTR->front = TOPKPTR->rear = rear;
-    return TOPKPTR;
-  }
-
-  TOPKPTR->rear->next = rear;
-  rear->prev = TOPKPTR->rear;
-
-  TOPKPTR->rear = rear;
-
-  assert(TOPKPTR->rear->data_ptr == iData);   // intregity check
-  return TOPKPTR;
 }
 
 /**
  * TODO: to be filled
  */
-struct __LinkListHeaders * __pop_front(struct __LinkListHeaders *TOPKPTR) 
+struct __LinkListHeaders *__push_rear(struct __LinkListHeaders *TOPKPTR, void *iData)
 {
-  if (isEmpty(TOPKPTR->front) == True)
+    struct __LinkList *rear = (struct __LinkList *)malloc(sizeof(struct __LinkList));
+    assert(rear);
+    rear->data_ptr = iData;
+
+    rear->next = BLACKHOLE;
+    rear->prev = BLACKHOLE;
+
+    if (isEmpty(TOPKPTR->rear) == True) {
+        TOPKPTR->front = TOPKPTR->rear = rear;
+        return TOPKPTR;
+    }
+
+    TOPKPTR->rear->next = rear;
+    rear->prev = TOPKPTR->rear;
+
+    TOPKPTR->rear = rear;
+
+    assert(TOPKPTR->rear->data_ptr == iData); // intregity check
     return TOPKPTR;
-
-  if (TOPKPTR->front == TOPKPTR->rear) {
-    free(TOPKPTR->front);
-
-    TOPKPTR->front = TOPKPTR->rear = BLACKHOLE;
-    return TOPKPTR;
-  }
-
-  struct __LinkList *freer = TOPKPTR->front;
-  TOPKPTR->front = TOPKPTR->front->next;
-  TOPKPTR->front->prev = BLACKHOLE;
-
-  free(freer);
-  return TOPKPTR;
 }
 
 /**
  * TODO: to be filled
  */
-struct __LinkListHeaders * __pop_rear(struct __LinkListHeaders *TOPKPTR) 
+struct __LinkListHeaders *__pop_front(struct __LinkListHeaders *TOPKPTR)
 {
-  if (isEmpty(TOPKPTR->front) == True)
+    if (isEmpty(TOPKPTR->front) == True)
+        return TOPKPTR;
+
+    if (TOPKPTR->front == TOPKPTR->rear) {
+        free(TOPKPTR->front);
+
+        TOPKPTR->front = TOPKPTR->rear = BLACKHOLE;
+        return TOPKPTR;
+    }
+
+    struct __LinkList *freer = TOPKPTR->front;
+    TOPKPTR->front = TOPKPTR->front->next;
+    TOPKPTR->front->prev = BLACKHOLE;
+
+    free(freer);
     return TOPKPTR;
+}
 
-  if (TOPKPTR->front == TOPKPTR->rear) {
-    free(TOPKPTR->rear);
+/**
+ * TODO: to be filled
+ */
+struct __LinkListHeaders *__pop_rear(struct __LinkListHeaders *TOPKPTR)
+{
+    if (isEmpty(TOPKPTR->front) == True)
+        return TOPKPTR;
 
-    TOPKPTR->front = TOPKPTR->rear = BLACKHOLE;
+    if (TOPKPTR->front == TOPKPTR->rear) {
+        free(TOPKPTR->rear);
+
+        TOPKPTR->front = TOPKPTR->rear = BLACKHOLE;
+        return TOPKPTR;
+    }
+
+    struct __LinkList *freer = TOPKPTR->rear;
+    TOPKPTR->rear = TOPKPTR->rear->prev;
+    TOPKPTR->rear->next = BLACKHOLE;
+
+    free(freer);
     return TOPKPTR;
-  }
-
-  struct __LinkList *freer = TOPKPTR->rear;
-  TOPKPTR->rear = TOPKPTR->rear->prev;
-  TOPKPTR->rear->next = BLACKHOLE;
-
-  free(freer);
-  return TOPKPTR;
 }
 
 /**
  * equalvalent to the peek()
  */
-void * __front__cpu__load__(struct __LinkListHeaders *TOPKPTR) 
+void *__front__cpu__load__(struct __LinkListHeaders *TOPKPTR)
 {
-  return (isEmpty(TOPKPTR->front) == True) ? BLACKHOLE : TOPKPTR->front->data_ptr;
+    return (isEmpty(TOPKPTR->front) == True) ? BLACKHOLE : TOPKPTR->front->data_ptr;
 }
 
-void ___dis__queue(struct __LinkListHeaders *TOPKPTR) {
-  struct __LinkList *i = TOPKPTR->front;
-  while (i!=BLACKHOLE) {
-    printf(" | state[%d], IO [%d] | \n", ((struct proc *)(i->data_ptr))->state, ((struct proc *)(i->data_ptr))->IOTime);
-    i = i->next;
-  }
+void ___dis__queue(struct __LinkListHeaders *TOPKPTR)
+{
+    struct __LinkList *i = TOPKPTR->front;
+    while (i != BLACKHOLE) {
+        printf(" | state[%d], IO [%d] | \n", ((struct proc *)(i->data_ptr))->state, ((struct proc *)(i->data_ptr))->IOTime);
+        i = i->next;
+    }
 }
 
-struct __LinkListHeaders * __removeByGivenData(struct __LinkListHeaders *TOPKPTR, void *data) 
+struct __LinkListHeaders *__removeByGivenData(struct __LinkListHeaders *TOPKPTR, void *data)
 {
-  struct __LinkList *prevPtr = BLACKHOLE;
-  struct __LinkList *currPtr = TOPKPTR->front;
+    struct __LinkList *prevPtr = BLACKHOLE;
+    struct __LinkList *currPtr = TOPKPTR->front;
 
-  if (TOPKPTR->front->data_ptr == data)
-    return __pop_front(TOPKPTR);
+    if (TOPKPTR->front->data_ptr == data)
+        return __pop_front(TOPKPTR);
 
-  if (currPtr == BLACKHOLE)
+    if (currPtr == BLACKHOLE)
+        return TOPKPTR;
+
+    while (currPtr != BLACKHOLE && currPtr->data_ptr != data) {
+        prevPtr = currPtr;
+        currPtr = currPtr->next;
+    }
+    if (currPtr == BLACKHOLE) // not found
+        return TOPKPTR;
+
+    struct __LinkList *temp = currPtr;
+    if (temp->next == BLACKHOLE)
+        // last element to be removed
+        return __pop_rear(TOPKPTR);
+    
+    
+    prevPtr->next = temp->next;
+    temp->next->prev = prevPtr;
+    free(temp);
     return TOPKPTR;
-  
-  while(currPtr != BLACKHOLE && currPtr->data_ptr != data) {
-    prevPtr = currPtr;
-    currPtr = currPtr->next;
-  }
-  if (currPtr == BLACKHOLE)   // not found
-    return TOPKPTR;
-
-  struct __LinkList *temp = currPtr;
-  if (temp->next == BLACKHOLE) {
-    // last element to be removed
-    return __pop_rear(TOPKPTR);
-  }
-  prevPtr->next = temp->next;
-  temp->next->prev = prevPtr;
-  free(temp);
-  return TOPKPTR;
 }
