@@ -50,8 +50,7 @@ struct readyQueue
 void printOutLoudPatQueue(struct __LinkListHeaders *ptr)
 {
     struct __LinkList *iter = ptr->front;
-    while (iter != BLACKHOLE)
-    {
+    while (iter != BLACKHOLE) {
         printf("%p -> ", iter->data_ptr);
         iter = iter->next;
     }
@@ -116,8 +115,7 @@ int schedulerRoundRobinSCH(struct proc *processToAdd, struct readyQueue **queueT
         (*queueTable)->Q2 = __push_rear((*queueTable)->Q2, processToAdd);
     else if (whichQueue == 3)
         (*queueTable)->Q3 = __push_rear((*queueTable)->Q3, processToAdd);
-    else
-    {
+    else {
         system("echo \"$(tput setaf 3)$(tput bold)UNMANAGEABLE EXCEPTION$(tput init)\"");
         return UNDEFINED;
     }
@@ -129,66 +127,64 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
 {
 
     // check which can be loaded to the queue
-    for (int i = 0; i < NO_PROCESSES; i++)
-    {
+    for (int i = 0; i < NO_PROCESSES; i++) {
 
-        switch ((*processTT)[i]->state)
-        {
-        case RUNNING:
-            if (mode == 1)
-                printf("ITS a 'RUNNING' PROC\n");
-            break;
+        switch ((*processTT)[i]->state) {
+            case RUNNING:
+                if (mode == 1)
+                    printf("ITS a 'RUNNING' PROC\n");
+                break;
 
-        case RUNNABLE:
-            if (mode == 1)
-                printf("ITS a 'RUNNABLE' PROC\n");
-            // (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
-            break;
+            case RUNNABLE:
+                if (mode == 1)
+                    printf("ITS a 'RUNNABLE' PROC\n");
+                // (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
+                break;
 
-        case WAITING:
-            if (mode == 1)
-                printf("ITS a 'WAITING' PROC\n");
+            case WAITING:
+                if (mode == 1)
+                    printf("ITS a 'WAITING' PROC\n");
 
-            break;
-        case READY:
-            if (mode == 1)
-                printf("ITS a 'READY' PROC after wakeup from I/O\n");
-            (*processTT)[i]->state = RUNNABLE;
-            (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
-            break;
-
-        /**
-         * So we will check all the embryo process from table and push it onto the Ready Queue
-         * based on the CLK time
-         */
-        case EMBRYO:
-            if (mode == 1)
-                printf("ITS a 'EMBRYO' PROC\n");
-            if (CLOCK_TIME >= (*processTT)[i]->arrivalTime)
-            {
+                break;
+            case READY:
+                if (mode == 1)
+                    printf("ITS a 'READY' PROC after wakeup from I/O\n");
                 (*processTT)[i]->state = RUNNABLE;
                 (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
-            }
-            break;
+                break;
 
-        case ZOMBIE:
-            if (mode == 1)
-                printf("ITS a 'ZOMBIE' PROC\n");
-            break;
+            /**
+             * So we will check all the embryo process from table and push it onto the Ready Queue
+             * based on the CLK time
+             */
+            case EMBRYO:
+                if (mode == 1)
+                    printf("ITS a 'EMBRYO' PROC\n");
+                if (CLOCK_TIME >= (*processTT)[i]->arrivalTime)
+                {
+                    (*processTT)[i]->state = RUNNABLE;
+                    (*queueTable)->Q1 = __push_rear((*queueTable)->Q1, (*processTT)[i]);
+                }
+                break;
 
-        case SLEEPING:
-            if (mode == 1)
-                printf("ITS a 'SLEEPING' PROC\n");
-            break;
+            case ZOMBIE:
+                if (mode == 1)
+                    printf("ITS a 'ZOMBIE' PROC\n");
+                break;
 
-        case DIED:
-            if (mode == 1)
-                printf("ITS a 'DIED' PROC\n");
-            break;
+            case SLEEPING:
+                if (mode == 1)
+                    printf("ITS a 'SLEEPING' PROC\n");
+                break;
 
-        default:
-            if (mode == 1)
-                fprintf(stderr, "Internal err 0x000\n");
+            case DIED:
+                if (mode == 1)
+                    printf("ITS a 'DIED' PROC\n");
+                break;
+
+            default:
+                if (mode == 1)
+                    fprintf(stderr, "Internal err 0x000\n");
         }
     }
 
@@ -197,8 +193,7 @@ int schedulerRoundRobin(struct proc ***processTT, struct readyQueue **queueTable
 
 bool _ALL_Processes_are_in_readyQueue(struct proc ***x)
 {
-    for (int i = 0; i < NO_PROCESSES; i++)
-    {
+    for (int i = 0; i < NO_PROCESSES; i++) {
         if ((*x)[i]->state == EMBRYO || (*x)[i]->state == WAITING || (*x)[i]->state == READY)
             return False;
     }
@@ -214,8 +209,7 @@ bool __ALL__DONE__(struct readyQueue *ptr)
 ////////  TESTING  ////////
 void buildProcessTable(struct proc ***processTT)
 {
-    for (int i = 0; i < NO_PROCESSES; i++)
-    {
+    for (int i = 0; i < NO_PROCESSES; i++) {
         printf("Enter the {Arrival Time},{Burst time1},{IO time},{Burst time2} for process_[ %d ]\n", i);
         uint xx, yy1, yy2, io;
         scanf("%d %d %d %d", &xx, &yy1, &io, &yy2);
@@ -231,8 +225,7 @@ void turnONQueue(struct proc ***processTT)
     *processTT = (struct proc **)malloc(sizeof(struct proc *) * NO_PROCESSES);
     assert(*processTT);
     char namePP[16] = {'\0'};
-    for (int i = 0; i < NO_PROCESSES; i++)
-    {
+    for (int i = 0; i < NO_PROCESSES; i++) {
         // namePP[0] = (char)(65 + i);
         namePP[0] = 'P';
         namePP[1] = (char)('0' + i + 1);

@@ -37,120 +37,108 @@ struct proc *__CPU__EXECUTION__AREA__(struct readyQueue **readyQueueRAM,
     struct proc *processToRun = BLACKHOLE;
     *whichQueue = decision;
 
-    switch (decision)
-    {
-    case 1:
-    {
-        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
-        (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
+    switch (decision) {
+        case 1: {
+            processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
+            (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
 
-        processToRun->state = RUNNING;
-        u_int64_t startTime = CLOCK_TIME;
+            processToRun->state = RUNNING;
+            u_int64_t startTime = CLOCK_TIME;
 
-        int qt1 = (*readyQueueRAM)->Qt1;
+            int qt1 = (*readyQueueRAM)->Qt1;
 
-        if (processToRun->burstTime1 > 0)
-        {
-            while (qt1 > 0 && processToRun->burstTime1 > 0)
-            {
-                qt1--;
-                (processToRun->burstTime1)--;
+            if (processToRun->burstTime1 > 0) {
+                while (qt1 > 0 && processToRun->burstTime1 > 0) {
+                    qt1--;
+                    (processToRun->burstTime1)--;
 
-                /**
-                 * @def refresh IOBuffer in same clock cycle 
-                 * assuming it is not processed by the processor
-                 */
-                // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
-                *bufferQueue = refresh(*bufferQueue);
-                // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+                    /**
+                     * @def refresh IOBuffer in same clock cycle 
+                     * assuming it is not processed by the processor
+                     */
+                    // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+                    *bufferQueue = refresh(*bufferQueue);
+                    // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
 
-                CLOCK_TIME++;
-                printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
-            }
-            printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
-            if (processToRun->burstTime1 > 0 && qt1 == 0)
-            {
-                // reinsert it in second Queue
-                // as it has crossed its usage time in most pri queue
-                // just for now place the removed queue to the same qeue which is here Q1
-                // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
-                processToRun->state = RUNNABLE;
-            }
-            if (processToRun->burstTime1 == 0 && qt1 >= 0)
-            {
-                processToRun->state = WAITING;
-                if (processToRun->IOTime == 0)
+                    CLOCK_TIME++;
+                    printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+                }
+                printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+                if (processToRun->burstTime1 > 0 && qt1 == 0) {
+                    // reinsert it in second Queue
+                    // as it has crossed its usage time in most pri queue
+                    // just for now place the removed queue to the same qeue which is here Q1
+                    // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
                     processToRun->state = RUNNABLE;
-                /**
-                 * IMP: processToRun will send NULL only when all the Activity is done
-                 */
+                }
+                if (processToRun->burstTime1 == 0 && qt1 >= 0) {
+                    processToRun->state = WAITING;
+                    if (processToRun->IOTime == 0)
+                        processToRun->state = RUNNABLE;
+                    /**
+                     * IMP: processToRun will send NULL only when all the Activity is done
+                     */
+                }
+            }
+            else if (processToRun->IOTime == 0) {
+                while (qt1 > 0 && processToRun->burstTime2 > 0) {
+                    qt1--;
+                    (processToRun->burstTime2)--;
+
+                    // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
+                    // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+                    *bufferQueue = refresh(*bufferQueue);
+                    // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+
+                    CLOCK_TIME++;
+                    printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+                }
+                printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+                if (processToRun->burstTime2 > 0 && qt1 == 0) {
+                    // reinsert it in second Queue
+                    // as it has crossed its usage time in most pri queue
+                    // just for now place the removed queue to the same qeue which is here Q1
+                    // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
+                    processToRun->state = RUNNABLE;
+                }
+                if (processToRun->burstTime2 == 0 && qt1 >= 0) {
+                    // free the memory allocated
+                    // ig the free is having som problems
+                    processToRun->state = DIED;
+                    // processToRun->state = WAITING;
+                    processToRun = BLACKHOLE;
+                }
             }
         }
-        else if (processToRun->IOTime == 0)
-        {
-            while (qt1 > 0 && processToRun->burstTime2 > 0)
-            {
-                qt1--;
-                (processToRun->burstTime2)--;
-
-                // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
-                // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
-                *bufferQueue = refresh(*bufferQueue);
-                // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
-
-                CLOCK_TIME++;
-                printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
-            }
-            printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
-            if (processToRun->burstTime2 > 0 && qt1 == 0)
-            {
-                // reinsert it in second Queue
-                // as it has crossed its usage time in most pri queue
-                // just for now place the removed queue to the same qeue which is here Q1
-                // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
-                processToRun->state = RUNNABLE;
-            }
-            if (processToRun->burstTime2 == 0 && qt1 >= 0)
-            {
-                // free the memory allocated
-                // ig the free is having som problems
-                processToRun->state = DIED;
-                // processToRun->state = WAITING;
-                processToRun = BLACKHOLE;
-            }
+        break;
+        case 2: {
+            /**
+             * TODO: write the Queue2
+             */
+            CLOCK_TIME++;
+            printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+            processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
+            (*readyQueueRAM)->Q2 = __pop_front((*readyQueueRAM)->Q2);
         }
-    }
-    break;
-    case 2:
-    {
-        /**
-         * TODO: write the Queue2
-         */
-        CLOCK_TIME++;
-        printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
-        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
-        (*readyQueueRAM)->Q2 = __pop_front((*readyQueueRAM)->Q2);
-    }
-    break;
-    case 3:
-    {
-        /**
-         * TODO: write the Queue3
-         */
-        CLOCK_TIME++;
-        printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
-        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
-        (*readyQueueRAM)->Q3 = __pop_front((*readyQueueRAM)->Q3);
-    }
-    break;
-    default:
-        /**
-         * STATUS: DONE
-         */
-        CLOCK_TIME++;
-        *bufferQueue = refresh(*bufferQueue);
-        printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
-        fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
+        break;
+        case 3: {
+            /**
+             * TODO: write the Queue3
+             */
+            CLOCK_TIME++;
+            printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+            processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
+            (*readyQueueRAM)->Q3 = __pop_front((*readyQueueRAM)->Q3);
+        }
+        break;
+        default:
+            /**
+             * STATUS: DONE
+             */
+            CLOCK_TIME++;
+            *bufferQueue = refresh(*bufferQueue);
+            printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+            fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
     }
     return processToRun;
 }
@@ -166,99 +154,88 @@ struct proc *__CPU__EXECUTION__AREA_NONDD__(struct readyQueue **readyQueueRAM,
     struct proc *processToRun = BLACKHOLE;
     *whichQueue = decision;
 
-    switch (decision)
-    {
-    case 1:
-    {
-        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
-        (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
+    switch (decision) {
+        case 1: {
+            processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q1);
+            (*readyQueueRAM)->Q1 = __pop_front((*readyQueueRAM)->Q1);
 
-        processToRun->state = RUNNING;
-        u_int64_t startTime = CLOCK_TIME;
+            processToRun->state = RUNNING;
+            u_int64_t startTime = CLOCK_TIME;
 
-        int qt1 = (*readyQueueRAM)->Qt1;
+            int qt1 = (*readyQueueRAM)->Qt1;
 
-        if (processToRun->burstTime1 > 0)
-        {
-            // first phase is not completed
-            while (qt1 > 0 && processToRun->burstTime1 > 0)
-            {
-                qt1--;
-                (processToRun->burstTime1)--;
+            if (processToRun->burstTime1 > 0) {
+                // first phase is not completed
+                while (qt1 > 0 && processToRun->burstTime1 > 0) {
+                    qt1--;
+                    (processToRun->burstTime1)--;
 
-                // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
-                *bufferQueue = refresh(*bufferQueue);
+                    // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
+                    *bufferQueue = refresh(*bufferQueue);
 
-                CLOCK_TIME++;
-            }
-            printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
-            if (processToRun->burstTime1 > 0 && qt1 == 0)
-            {
-                processToRun->state = RUNNABLE;
-            }
-            if (processToRun->burstTime1 == 0 && qt1 >= 0)
-            {
-                processToRun->state = WAITING;
-                if (processToRun->IOTime == 0)
+                    CLOCK_TIME++;
+                }
+                printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+                
+                if (processToRun->burstTime1 > 0 && qt1 == 0)
                     processToRun->state = RUNNABLE;
-                /**
-                 * IMP: processToRun will send NULL only when all the Activity is done
-                 */
+                
+                if (processToRun->burstTime1 == 0 && qt1 >= 0) {
+                    processToRun->state = WAITING;
+                    if (processToRun->IOTime == 0)
+                        processToRun->state = RUNNABLE;
+                    /**
+                     * IMP: processToRun will send NULL only when all the Activity is done
+                     */
+                }
+            }
+            else if (processToRun->IOTime == 0) {
+                // first phase is completed
+                while (qt1 > 0 && processToRun->burstTime2 > 0) {
+                    qt1--;
+                    (processToRun->burstTime2)--;
+
+                    // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
+                    // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+                    *bufferQueue = refresh(*bufferQueue);
+                    // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
+
+                    CLOCK_TIME++;
+                }
+                printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
+                if (processToRun->burstTime2 > 0 && qt1 == 0) {
+                    // reinsert it in second Queue
+                    // as it has crossed its usage time in most pri queue
+                    // just for now place the removed queue to the same qeue which is here Q1
+                    // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
+                    processToRun->state = RUNNABLE;
+                }
+                if (processToRun->burstTime2 == 0 && qt1 >= 0) {
+                    // free the memory allocated
+                    // ig the free is having som problems
+                    processToRun->state = DIED;
+                    processToRun = BLACKHOLE;
+                }
             }
         }
-        else if (processToRun->IOTime == 0)
-        {
-            // first phase is completed
-            while (qt1 > 0 && processToRun->burstTime2 > 0)
-            {
-                qt1--;
-                (processToRun->burstTime2)--;
-
-                // refresh IOBUffer in same clock cycle assuming it is not processed by the processor
-                // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
-                *bufferQueue = refresh(*bufferQueue);
-                // ___dis__queue((*bufferQueue)->BUFFER_QUEUE);
-
-                CLOCK_TIME++;
-            }
-            printf("~~PROCESS+| %s [%ld - %ld] |+\n", processToRun->name, startTime, CLOCK_TIME);
-            if (processToRun->burstTime2 > 0 && qt1 == 0)
-            {
-                // reinsert it in second Queue
-                // as it has crossed its usage time in most pri queue
-                // just for now place the removed queue to the same qeue which is here Q1
-                // (*readyQueueRAM)->Q2 = __push_rear((*readyQueueRAM)->Q2, processToRun);
-                processToRun->state = RUNNABLE;
-            }
-            if (processToRun->burstTime2 == 0 && qt1 >= 0)
-            {
-                // free the memory allocated
-                // ig the free is having som problems
-                processToRun->state = DIED;
-                processToRun = BLACKHOLE;
-            }
+        break;
+        case 2: {
+            CLOCK_TIME++;
+            printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
+            processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
+            (*readyQueueRAM)->Q2 = __pop_front((*readyQueueRAM)->Q2);
         }
-    }
-    break;
-    case 2:
-    {
-        CLOCK_TIME++;
-        printf("\n[[[[[ CLK TICK [%ld] ]]]]]\n", CLOCK_TIME);
-        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q2);
-        (*readyQueueRAM)->Q2 = __pop_front((*readyQueueRAM)->Q2);
-    }
-    break;
-    case 3:
-    {
-        CLOCK_TIME++;
-        processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
-        (*readyQueueRAM)->Q3 = __pop_front((*readyQueueRAM)->Q3);
-    }
-    break;
-    default:
-        CLOCK_TIME++;
-        *bufferQueue = refresh(*bufferQueue);
-        fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
+        break;
+        case 3: {
+            CLOCK_TIME++;
+            processToRun = (struct proc *)__front__cpu__load__((*readyQueueRAM)->Q3);
+            (*readyQueueRAM)->Q3 = __pop_front((*readyQueueRAM)->Q3);
+        }
+        break;
+        default:
+            CLOCK_TIME++;
+            *bufferQueue = refresh(*bufferQueue);
+            fprintf(stderr, "UNMANAGEABLE EXCEPTION!!!!!");
     }
     return processToRun;
 }
@@ -324,24 +301,20 @@ int SmainDebug()
     PS(processTT)
 
     schedulerRoundRobin(&processTT, &readyQueueTT, 1);
-    while (True)
-    {
+    while (True) {
         if (__ALL__DONE__(readyQueueTT) == True && _ALL_Processes_are_in_readyQueue(&processTT) == True)
-        {
             break;
-        }
+        
         int whichQueue = 0;
         struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue, &ioBuffer);
         PS(processTT)
 
-        if (callBack == BLACKHOLE)
-        {
+        if (callBack == BLACKHOLE) {
             // that particular process has completed no need to add at the end
             schedulerRoundRobin(&processTT, &readyQueueTT, 1);
             continue;
         }
-        else if (callBack->state == WAITING)
-        {
+        else if (callBack->state == WAITING) {
             // add it to the IOBUFFER
             ioBuffer->BUFFER_QUEUE = __push_rear(ioBuffer->BUFFER_QUEUE, callBack);
             schedulerRoundRobin(&processTT, &readyQueueTT, 1);
@@ -378,8 +351,7 @@ int SmainRun()
     PS(processTT)
 
     schedulerRoundRobin(&processTT, &readyQueueTT, 0);
-    while (True)
-    {
+    while (True) {
         // READYQUEPS(readyQueueTT)
         // if all the queues are empty then stop the computer/shutdown
         /**
@@ -387,22 +359,20 @@ int SmainRun()
          * * ig it is DONE
          * a case can be that ready queue is over and all the processes are inside the buffer
          */
-        if (__ALL__DONE__(readyQueueTT) == True && _ALL_Processes_are_in_readyQueue(&processTT) == True)
-        {
+        if (__ALL__DONE__(readyQueueTT) == True && 
+            _ALL_Processes_are_in_readyQueue(&processTT) == True) {
             break;
         }
         int whichQueue = 0;
         struct proc *callBack = __CPU__EXECUTION__AREA__(&readyQueueTT, &whichQueue, &ioBuffer);
         // PS(processTT)
 
-        if (callBack == BLACKHOLE)
-        {
+        if (callBack == BLACKHOLE) {
             // that particular process has completed no need to add at the end
             schedulerRoundRobin(&processTT, &readyQueueTT, 0);
             continue;
         }
-        else if (callBack->state == WAITING)
-        {
+        else if (callBack->state == WAITING) {
             // add it to the IOBUFFER
             ioBuffer->BUFFER_QUEUE = __push_rear(ioBuffer->BUFFER_QUEUE, callBack);
             schedulerRoundRobin(&processTT, &readyQueueTT, 0);
@@ -426,16 +396,10 @@ int SMain(int param)
     // this will call which main function
     int ret = 0;
     if (param == 1)
-    {
         ret = SmainDebug();
-    }
     else if (param == 2)
-    {
         ret = SmainRun();
-    }
     else
-    {
         return EXIT_FAILURE;
-    }
     return ret;
 }

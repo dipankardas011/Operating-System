@@ -9,20 +9,17 @@ void helper()
 
 int main(int argc, char const *argv[])
 {
-    if (argc == 1)
-    {
+    if (argc == 1) {
         helper();
         exit(0);
     }
     printf("\n$$$$ BOOTING $$$$\n\n");
     printf("%s\n\n", argv[1]);
-    if (argv[1][0] == '-' && argv[1][1] == '-' && argv[1][2] == 'd')
-    {
+    if (argv[1][0] == '-' && argv[1][1] == '-' && argv[1][2] == 'd') {
         int ert = SMain(1);
         assert(ert == 0);
     }
-    else if (argv[1][0] == '-' && argv[1][1] == '-' && argv[1][2] == 'n')
-    {
+    else if (argv[1][0] == '-' && argv[1][1] == '-' && argv[1][2] == 'n') {
         int ert = SMain(2);
         assert(ert == 0);
     }
