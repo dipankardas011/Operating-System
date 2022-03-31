@@ -1,0 +1,1 @@
+void __printer_color(char *, int);
